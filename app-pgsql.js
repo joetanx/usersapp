@@ -11,7 +11,7 @@ const fs = require('fs')
 const crypto = require('crypto')
 const cookieParser = require('cookie-parser')
 const privateKey = fs.readFileSync(process.env.JWT_PRIVATE_KEY, 'utf8') // Load private key
-const publicKey = fs.readFileSync(process.env.JWT_PUBLIC_KEY,, 'utf8') // Load public key
+const publicKey = fs.readFileSync(process.env.JWT_PUBLIC_KEY, 'utf8') // Load public key
 
 const connectionConfig = {
   host: process.env.DB_HOST,
