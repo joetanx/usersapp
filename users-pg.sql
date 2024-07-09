@@ -1,0 +1,112 @@
+SELECT 'CREATE DATABASE users' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'users')\gexec
+\c users;
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  firstName VARCHAR(128) NOT NULL DEFAULT '',
+  lastName VARCHAR(128) NOT NULL DEFAULT '',
+  username VARCHAR(128) NOT NULL DEFAULT '',
+  email VARCHAR(128) NOT NULL DEFAULT '',
+  mobile VARCHAR(128) NOT NULL DEFAULT '',
+  password VARCHAR(128) NOT NULL DEFAULT ''
+);
+
+INSERT INTO users VALUES (DEFAULT,'Liam','Johnson','liam.johnson','liam.johnson@example.com','+6584582486','$2b$12$BH7SkO8BNUFdYpOU60INqutF79m0g6W9Sonzkit2e2poyADGGVJiO');
+INSERT INTO users VALUES (DEFAULT,'Olivia','Smith','olivia.smith','olivia.smith@example.com','+6596133788','$2b$12$DXDtcaIHm8N0SohINgf/ee7lcrroiGLCwu.rKJRKuAUzFikk8uQh6');
+INSERT INTO users VALUES (DEFAULT,'Noah','Williams','noah.williams','noah.williams@example.com','+6585240148','$2b$12$iMbNM0QvOWjxPD8J6mm8UuDsDzONiOxsMpscYDNTs7djG4xpROm/.');
+INSERT INTO users VALUES (DEFAULT,'Emma','Brown','emma.brown','emma.brown@example.com','+6597556793','$2b$12$LFd5dxGEwXHdjjP7osLi6uevkw5Ikfxt1KIupr8g8l.a/FF098PvO');
+INSERT INTO users VALUES (DEFAULT,'William','Jones','william.jones','william.jones@example.com','+6585875483','$2b$12$oLVB72nz0S0Vp5RP3E/Pp.VQakoAs5xxHCUlcbmjbrsnVf4wiUx2S');
+INSERT INTO users VALUES (DEFAULT,'Ava','Garcia','ava.garcia','ava.garcia@example.com','+6581614604','$2b$12$/ZiaGsPrjlZ11su0vMK5C.FzBlJ9GvsMfaz9gUO0eRItq6JyopnSa');
+INSERT INTO users VALUES (DEFAULT,'James','Martinez','james.martinez','james.martinez@example.com','+6596040463','$2b$12$VONlPghjlacfnPii79bauuUc6MU/tqmSz/O8KYaqoua5Prb7u8Gd2');
+INSERT INTO users VALUES (DEFAULT,'Isabella','Robinson','isabella.robinson','isabella.robinson@example.com','+6586247512','$2b$12$WLaVzxeDCwCvzZ1VfD.sOOCmScHp1cHFlId0RZHt6OeGq8YpaBJ4S');
+INSERT INTO users VALUES (DEFAULT,'Oliver','Clark','oliver.clark','oliver.clark@example.com','+6594718197','$2b$12$Wl3Xrw.rTD3DT56xdvzVK.U7XGzTIgWoDGq43LiUkrB5QylRU.ljm');
+INSERT INTO users VALUES (DEFAULT,'Sophia','Rodriguez','sophia.rodriguez','sophia.rodriguez@example.com','+6593129901','$2b$12$9TgR.FjmRyWozeyQyJMc6eyic1/ObuQx9n3aHJb2BueSx.mBBZdEe');
+INSERT INTO users VALUES (DEFAULT,'Elijah','Lewis','elijah.lewis','elijah.lewis@example.com','+6584625700','$2b$12$Zd6mEPVs02hXsq4A/EvECudXe/AxX9QjgztcJ2vW8nQTvsLCpjsDO');
+INSERT INTO users VALUES (DEFAULT,'Amelia','Lee','amelia.lee','amelia.lee@example.com','+6582240483','$2b$12$GVymqi/l7hM3cSw5RZDYwuwVh6pkLSsiahAwRXMlV2By4e7gYBw9q');
+INSERT INTO users VALUES (DEFAULT,'Lucas','Walker','lucas.walker','lucas.walker@example.com','+6595129606','$2b$12$iDuV8Cqtly7AOyzw6loE4OulhQlPumbDtRUbjhO.1ryswv3l/CkxC');
+INSERT INTO users VALUES (DEFAULT,'Mia','Hall','mia.hall','mia.hall@example.com','+6589725130','$2b$12$k44.LsqbpNnyFlTIWwoMcuIpmGHhJ7ir8AGMdkYgo97e1nXOVdfa6');
+INSERT INTO users VALUES (DEFAULT,'Mason','Allen','mason.allen','mason.allen@example.com','+6595447180','$2b$12$QVgk8RYrzFxfGLvCuOw23ORaLhz8D3YrqCU5ys4RbvtP8tIMnMz0O');
+INSERT INTO users VALUES (DEFAULT,'Harper','Young','harper.young','harper.young@example.com','+6582736204','$2b$12$dORl/LVvAJbaRcw.t.hLQeUsk3gOWTuMxfgDmWlTsHvm3y6lkD35K');
+INSERT INTO users VALUES (DEFAULT,'Logan','Hernandez','logan.hernandez','logan.hernandez@example.com','+6595872440','$2b$12$aA7OV/yZN5eT4YrCXXMCH.g6Pg1kSzVAZnNNK3Y5FlJgeP.TDZSlG');
+INSERT INTO users VALUES (DEFAULT,'Evelyn','King','evelyn.king','evelyn.king@example.com','+6587755925','$2b$12$wEFLY4lih1IAxJHz6wwXi.2LL/xY5U1Ib560cuCXcudVrCIrq/lo.');
+INSERT INTO users VALUES (DEFAULT,'Ethan','Wright','ethan.wright','ethan.wright@example.com','+6586696427','$2b$12$wRn82eeIN6tKg1fCl8.XcOmp2JjquY4CdBMuUWnPKTKM2.6ez33SO');
+INSERT INTO users VALUES (DEFAULT,'Aria','Lopez','aria.lopez','aria.lopez@example.com','+6587618925','$2b$12$OQiEAEHcUFl2pUzemco/aO6Gb9HblVdj02S9qAsCvDBrKJX52bSsK');
+INSERT INTO users VALUES (DEFAULT,'Alexander','Scott','alexander.scott','alexander.scott@example.com','+6593716004','$2b$12$k2QFvOWbMs.nPGyEx1T8L..ylynbTUj6QYzan.5DdpI7nob8EUgRe');
+INSERT INTO users VALUES (DEFAULT,'Grace','Green','grace.green','grace.green@example.com','+6595801688','$2b$12$XiE7Y.kjR3pTu8EnLNMF4uV4KuY3zOYQdXmxXlTV8J.lRWxK93FRy');
+INSERT INTO users VALUES (DEFAULT,'Landon','Adams','landon.adams','landon.adams@example.com','+6581445942','$2b$12$pxnPnqvgfzShVgEmszSFROinmbuecaAmm.qXdCNaGN9JNaR7D2Tc.');
+INSERT INTO users VALUES (DEFAULT,'Zoey','Baker','zoey.baker','zoey.baker@example.com','+6597557150','$2b$12$I4mAFH1dZbbz3UiIspTwFuiWvsv0A712yB6dZO9RIP0NZttucZvOO');
+INSERT INTO users VALUES (DEFAULT,'Jackson','Gonzalez','jackson.gonzalez','jackson.gonzalez@example.com','+6588576787','$2b$12$c2PlFermR.r8CR16v25i/udLQ.QWKFMKfLVIf2A68MSguNvc.VOoW');
+INSERT INTO users VALUES (DEFAULT,'Nora','Nelson','nora.nelson','nora.nelson@example.com','+6587089477','$2b$12$shXqn0l9DEBYcmpxvHbn.eEwq8AnwQVgf5GTBz4.6IAki1zWQOK0.');
+INSERT INTO users VALUES (DEFAULT,'Grayson','Carter','grayson.carter','grayson.carter@example.com','+6595573943','$2b$12$vBeF0iDsNaUa8rz.37Dj3O0pHbAGFmTCswjbDHswF80mv8.3TneO6');
+INSERT INTO users VALUES (DEFAULT,'Riley','Perez','riley.perez','riley.perez@example.com','+6583084868','$2b$12$9HQu9/6JDpdiUs/YgUbPC.7l8cd7PLsfNX3QjTSwXCh4oV7Ncs44u');
+INSERT INTO users VALUES (DEFAULT,'Victoria','Roberts','victoria.roberts','victoria.roberts@example.com','+6594952440','$2b$12$DRxFBMRC136ijQ0LDMfKpuIi6YNkEXK2KnfOI3jI2RHEKOSXIrFw.');
+INSERT INTO users VALUES (DEFAULT,'Benjamin','Turner','benjamin.turner','benjamin.turner@example.com','+6593041715','$2b$12$IhwQ7WwYZaHhnllbG.IzE.MNUGnZZfuECwIiKPERXcAPngXjfCo4W');
+INSERT INTO users VALUES (DEFAULT,'Lily','Phillips','lily.phillips','lily.phillips@example.com','+6599478892','$2b$12$zi9yu9CeWma5KBbD6hCV3uWtSmEvWtfrZQf7TU6p.mhezmUHTmtUG');
+INSERT INTO users VALUES (DEFAULT,'Gabriel','Campbell','gabriel.campbell','gabriel.campbell@example.com','+6586772210','$2b$12$1.ScxaPUqDPx2UFU58TGdeyIrlDmIWGuJi6gg64Qs6xUkFYpKMD0a');
+INSERT INTO users VALUES (DEFAULT,'Samuel','Parker','samuel.parker','samuel.parker@example.com','+6585483094','$2b$12$akbJm7SUQu0.TuJaBa.mpOOuZU0C.DGjHHAvVRkdzCyNG51.LgoJC');
+INSERT INTO users VALUES (DEFAULT,'Scarlett','Evans','scarlett.evans','scarlett.evans@example.com','+6588918371','$2b$12$APCjQPom5d8M0mcDKN8m3u/.j7/P5NNEsSGIgljjCy3hSnqLdcC.e');
+INSERT INTO users VALUES (DEFAULT,'Christopher','Edwards','christopher.edwards','christopher.edwards@example.com','+6594352097','$2b$12$LuI93no0LnSNjotUP22BIuyPmHKQ1VJeXAiC68JFDcUoRwwc/xNQa');
+INSERT INTO users VALUES (DEFAULT,'Paisley','Collins','paisley.collins','paisley.collins@example.com','+6582050175','$2b$12$whq7qJFIAOvBMoGcgpT7pOsaVaTVAYj8w2LZT5Epy2hmFUX6.tgc.');
+INSERT INTO users VALUES (DEFAULT,'Anthony','Stewart','anthony.stewart','anthony.stewart@example.com','+6599423318','$2b$12$H3fvyPNwC25DCgJMlrk53ejfuLIToBCHiSYRVB0am3ExQESjX/XC.');
+INSERT INTO users VALUES (DEFAULT,'Addison','Morris','addison.morris','addison.morris@example.com','+6582973078','$2b$12$zOH2842vqhhvW0kIr96qHekoS/TP4GlyidjKOI1I4Yw7JO2zCPx3y');
+INSERT INTO users VALUES (DEFAULT,'Ella','Murphy','ella.murphy','ella.murphy@example.com','+6596569133','$2b$12$yD3eBWHfxOw9zO6NAHWnC.PYJTCjxdW9hNjgJekgaL/ACuKxE0a.q');
+INSERT INTO users VALUES (DEFAULT,'Andrew','Cook','andrew.cook','andrew.cook@example.com','+6599071842','$2b$12$JFU8W3QUYXzxmBN4CMZX4.pJ1PgVZKDi8XxDyhZ6PRpxaHgzhjxRW');
+INSERT INTO users VALUES (DEFAULT,'Hannah','Bailey','hannah.bailey','hannah.bailey@example.com','+6585627475','$2b$12$ghBjH6YbLXJHYMKO8vclrefQOOuhSP4.00LQVJ9NFmeM5.V9u/s1i');
+INSERT INTO users VALUES (DEFAULT,'Joshua','Rivera','joshua.rivera','joshua.rivera@example.com','+6593752571','$2b$12$83CuLonmL.A39HzKEvtEeuftLFZKO4LnIT6fyx09QZCe52rOl4O6S');
+INSERT INTO users VALUES (DEFAULT,'Savannah','Cooper','savannah.cooper','savannah.cooper@example.com','+6596358856','$2b$12$V2xrQejgIx0g99IPNDHJQe/Gy2o4SJJ7hKSkWl8YSW1DOvalx.w9e');
+INSERT INTO users VALUES (DEFAULT,'Lincoln','Richardson','lincoln.richardson','lincoln.richardson@example.com','+6592523186','$2b$12$rdxEwyT4oOe0m7sH7eVIuOuCY0uFHCSbGH10MBoZuosOmAgyEOtby');
+INSERT INTO users VALUES (DEFAULT,'Mateo','Cox','mateo.cox','mateo.cox@example.com','+6592915914','$2b$12$Op8tWKIP0bgsnHFqYoJuXOAJ5.vqj4r./2C2OpfyRQLLvLVEjwJ3y');
+INSERT INTO users VALUES (DEFAULT,'Camila','Howard','camila.howard','camila.howard@example.com','+6591471896','$2b$12$28cPQBMWCBoQlTWFNi78zeNMUTQiSpmZGuCRDqN1Kh/0ZrcY0A7bG');
+INSERT INTO users VALUES (DEFAULT,'Ryan','Ward','ryan.ward','ryan.ward@example.com','+6597029602','$2b$12$wGhZheBaOdC8790rqQh3KOdJ5TodRQNnd/TnTlGKC960bG51VEUXa');
+INSERT INTO users VALUES (DEFAULT,'Claire','Torres','claire.torres','claire.torres@example.com','+6586806123','$2b$12$EtTQ09I.X/hBQA3fZJ.7qOtqTWO1/xM0jwIPx2xwAGowCKz69fGU.');
+INSERT INTO users VALUES (DEFAULT,'Xavier','Peterson','xavier.peterson','xavier.peterson@example.com','+6592964896','$2b$12$/b.Lo1fXyacEYXuJ.J5x5uYAm8WjziYwM4ZSjnulzSTw29rPHQRt.');
+INSERT INTO users VALUES (DEFAULT,'Penelope','Gray','penelope.gray','penelope.gray@example.com','+6587260547','$2b$12$xBDr4FheTdRsURcT5VYdzO/jR7xzyUj5R7cL8Xtoq5AvjsyTd6rzW');
+INSERT INTO users VALUES (DEFAULT,'Levi','Ramirez','levi.ramirez','levi.ramirez@example.com','+6581407322','$2b$12$XeeCx1PTjgF2kb3n6ur8LOR9KDIIA9tGu/Hf9ByHCTW5wco/bhjge');
+INSERT INTO users VALUES (DEFAULT,'Aaliyah','James','aaliyah.james','aaliyah.james@example.com','+6593213790','$2b$12$saB4AOWH5NsZVfo3lGc3R.XEb5ExeIBO9g4iLPp.AemCDKLASAjeu');
+INSERT INTO users VALUES (DEFAULT,'Ari','Watson','ari.watson','ari.watson@example.com','+6582107864','$2b$12$vk.1.k.9qjuq/Wpml.efBeN3KHmz2v4PTpQbvbXsIa/zGdAiWakue');
+INSERT INTO users VALUES (DEFAULT,'Eli','Brooks','eli.brooks','eli.brooks@example.com','+6586593938','$2b$12$9CRrmJARKKVf5A.40e5zMOvQoHJasq5KCdJEr2bFlDx/DljO/zu5S');
+INSERT INTO users VALUES (DEFAULT,'Naomi','Sanders','naomi.sanders','naomi.sanders@example.com','+6593486697','$2b$12$W8Yp6ub1mBXPmvMgCgJ8YeB/dMrjfZtN0UgWOTCS3xs.4w0TdMZI6');
+INSERT INTO users VALUES (DEFAULT,'Kayden','Price','kayden.price','kayden.price@example.com','+6589338234','$2b$12$dq9ngskVe8lHOn/S7cJhseSUdxAszY0.ex2x2moUyq.5XHsudnpES');
+INSERT INTO users VALUES (DEFAULT,'Madelyn','Bennett','madelyn.bennett','madelyn.bennett@example.com','+6594598447','$2b$12$vzqrJ8exLXvgYJqEons.E.nclqNYMPJCAYeJYTVcYi6WyGdcyLWC6');
+INSERT INTO users VALUES (DEFAULT,'Luca','Wood','luca.wood','luca.wood@example.com','+6593829448','$2b$12$kdFYEdfavGHKyTsbUp/8dO3MppxGomADxuz7IYAwRZzX35NkMBQZi');
+INSERT INTO users VALUES (DEFAULT,'Maria','Barnes','maria.barnes','maria.barnes@example.com','+6596665034','$2b$12$1gbP1paDNECOZt39K36UvutpP.YZM/cmMbrgMsJv7ux7wUAFHvLZW');
+INSERT INTO users VALUES (DEFAULT,'Connor','Ross','connor.ross','connor.ross@example.com','+6589281456','$2b$12$v7kn7pbEJv7PmPxc98DHiO9E052.hZE91z/oAJB73NMM3IaPRk0.C');
+INSERT INTO users VALUES (DEFAULT,'Hazel','Henderson','hazel.henderson','hazel.henderson@example.com','+6585118372','$2b$12$sSAfMRwY8ciXXNqi8e910OgMtCA/M/9tUra8H3qvqE2FsT5LsqIGO');
+INSERT INTO users VALUES (DEFAULT,'Lincoln','Coleman','lincoln.coleman','lincoln.coleman@example.com','+6596908855','$2b$12$mL68nqp1ncby8PQbpvRzleMzWL1rlMEDKpP..6NH9ev7grhnMQ7KW');
+INSERT INTO users VALUES (DEFAULT,'Elena','Jenkins','elena.jenkins','elena.jenkins@example.com','+6583091925','$2b$12$vUdlg5n7jiS/RINV8GceYO9EJMkMKxZb.xD/5olHIuZEM4tmjxZSm');
+INSERT INTO users VALUES (DEFAULT,'Nolan','Perry','nolan.perry','nolan.perry@example.com','+6583607548','$2b$12$jqW7rsp.N6Fzn67v6OzsYOFPRdAiIi6RHldoYg.BqBekvwIijcV3G');
+INSERT INTO users VALUES (DEFAULT,'Kinsley','Powell','kinsley.powell','kinsley.powell@example.com','+6594487600','$2b$12$bE3gjZSAuNytHJjyZlCaOOMSVkMmE.OhT0EClzfFivXr8lyXRjgR2');
+INSERT INTO users VALUES (DEFAULT,'Josiah','Long','josiah.long','josiah.long@example.com','+6588902622','$2b$12$MIXuwu3VKQufsDHk6QIfnOjZHar.1KHdjYz5fSXpos0iyK6.VJ8Vm');
+INSERT INTO users VALUES (DEFAULT,'Jasmine','Patterson','jasmine.patterson','jasmine.patterson@example.com','+6589472198','$2b$12$HrUyMb7CtWKTvU0f4TFjCeOQPd6.tYS/BgghiIBxlgeoCoTaw1zYS');
+INSERT INTO users VALUES (DEFAULT,'Bryce','Hughes','bryce.hughes','bryce.hughes@example.com','+6589232142','$2b$12$l1etyBUePuw87dYWFgqmz.yrTf4thcf2SFg8vz39.0K8T3Zok7ZxC');
+INSERT INTO users VALUES (DEFAULT,'Asher','Flores','asher.flores','asher.flores@example.com','+6583798357','$2b$12$LgcGGWUjug7kcedF5bo0XefyWtsEDMSzX3YfqVJWJsYZMx.u6kXZ2');
+INSERT INTO users VALUES (DEFAULT,'Aria','Washington','aria.washington','aria.washington@example.com','+6591760347','$2b$12$boXB0KuNQ3taN6BYYV6VeOuj02AnIXN26z4xh6JqUX6XC1WqChJoi');
+INSERT INTO users VALUES (DEFAULT,'Edward','Butler','edward.butler','edward.butler@example.com','+6597637175','$2b$12$qsVM1MGaT9JbFVqYTNQQguor0LwDpkA6aYJiuRME7covkQLKO6/yu');
+INSERT INTO users VALUES (DEFAULT,'Everly','Simmons','everly.simmons','everly.simmons@example.com','+6583615105','$2b$12$vQB5KSGr.6UrIfSkEXh3du2Z/7Np9z7xmY9xxpLZ/a9zHG8k3cbUa');
+INSERT INTO users VALUES (DEFAULT,'Jason','Foster','jason.foster','jason.foster@example.com','+6594629455','$2b$12$ItHNhr2khIooTn8vETPamurFnoCWPsFck3Jp1kcSznVj4KrqDSLM6');
+INSERT INTO users VALUES (DEFAULT,'Savannah','Gonzales','savannah.gonzales','savannah.gonzales@example.com','+6582991210','$2b$12$kQ0wvUqII4gQm7Z6Mb2nJu2Xxm4X.JiB.0n7PXuj5.y3xthd21qTK');
+INSERT INTO users VALUES (DEFAULT,'Xavier','Bryant','xavier.bryant','xavier.bryant@example.com','+6584580858','$2b$12$70zpCDub/duth1saS9b6VO0A5qpnCUYgWAuUc33kxoEfgiYLVEs/K');
+INSERT INTO users VALUES (DEFAULT,'Violet','Alexander','violet.alexander','violet.alexander@example.com','+6586643091','$2b$12$kRfwpuMfOfirspa.epYsP.cKo5xqRgHAIUsSZ9r0zmGurQvr7LYly');
+INSERT INTO users VALUES (DEFAULT,'Chase','Russell','chase.russell','chase.russell@example.com','+6598711974','$2b$12$0SkI5ZUIdRDLKnvaSe4AKOGnjCBH9cFEHD7HRdT6XLUJhucviWuPC');
+INSERT INTO users VALUES (DEFAULT,'Autumn','Griffin','autumn.griffin','autumn.griffin@example.com','+6585201091','$2b$12$v/6JPwbbpte9ZYF7i2bp5uU7jsuEXZ.SrbOZC8mUsW3jYtVAWtGee');
+INSERT INTO users VALUES (DEFAULT,'Tyler','Diaz','tyler.diaz','tyler.diaz@example.com','+6596928684','$2b$12$GMmgW3x4cZT5GD3s2C8Z5ek6u9aZ3QjFWE4EJmOcmKwKCtUJwq9hi');
+INSERT INTO users VALUES (DEFAULT,'Clara','Hayes','clara.hayes','clara.hayes@example.com','+6583054790','$2b$12$sw2mfpF7145RK8UQXlmz9e9PKELOs8xANOyRoMq7hRCCdylR0oT7O');
+INSERT INTO users VALUES (DEFAULT,'Charlie','Myers','charlie.myers','charlie.myers@example.com','+6594702898','$2b$12$GKbGATdi8X.k/6eIKrL30uBQvi8hv4DCI9TSoTdZVIumDnZegpg8.');
+INSERT INTO users VALUES (DEFAULT,'Alice','Ford','alice.ford','alice.ford@example.com','+6598198605','$2b$12$MiZIamTAVDyKYI.niLX8M.xa0tEd6/xyDqNEptlF49OHyWdXBRWGG');
+INSERT INTO users VALUES (DEFAULT,'Micah','Hamilton','micah.hamilton','micah.hamilton@example.com','+6584672621','$2b$12$zme28puzxD3gwRYL7Z25MeMTui/GrnP7P3Q8UxXoDiuVhgzAmkGui');
+INSERT INTO users VALUES (DEFAULT,'Eva','Graham','eva.graham','eva.graham@example.com','+6594302560','$2b$12$d.vNGktJ.8le74KnJvF7veENyPaVjrRQgoSBZcTY1jBnLRCe9UhFy');
+INSERT INTO users VALUES (DEFAULT,'Hudson','Sullivan','hudson.sullivan','hudson.sullivan@example.com','+6581521047','$2b$12$wzuWKo34ZNl8XHmnS4nHpeVH5mY/UvQwEAmR7POWAidE0T2WAhkg2');
+INSERT INTO users VALUES (DEFAULT,'Aurora','Wallace','aurora.wallace','aurora.wallace@example.com','+6598537283','$2b$12$b3cl2ZbXtRRB33As6DiSju2gfLRx8QKlfvysr7uDvTQIEHawzXuny');
+INSERT INTO users VALUES (DEFAULT,'Jack','Woods','jack.woods','jack.woods@example.com','+6582143628','$2b$12$pup1dU6ElX6bbPjeVew95.jWpGyl8QdlS5sEDGLbkh38/JEa16w3G');
+INSERT INTO users VALUES (DEFAULT,'Reagan','West','reagan.west','reagan.west@example.com','+6595895756','$2b$12$n.rxxHDUVnoCYz0XgwemduYB.EbrAz78.G9ZcBwviEyJOO1fxiOxi');
+INSERT INTO users VALUES (DEFAULT,'Theodore','Newman','theodore.newman','theodore.newman@example.com','+6593446283','$2b$12$WTeEd6Ubp2cjQNKzMG31L.YNawbAJOWULJYD/mYbibwwMthoMofam');
+INSERT INTO users VALUES (DEFAULT,'Paisley','Logan','paisley.logan','paisley.logan@example.com','+6586839474','$2b$12$gP98O//FX0iLt0G4Un324ORd.zM6wB5LCc7GU4WVVuQziEn1gI0Ta');
+INSERT INTO users VALUES (DEFAULT,'Leo','Caldwell','leo.caldwell','leo.caldwell@example.com','+6598494487','$2b$12$kV.sQmE45IwqodpnArc3g.cdOZnsU3cvqaPSiYVkLSDlPtlyRJeAy');
+INSERT INTO users VALUES (DEFAULT,'Isla','Chambers','isla.chambers','isla.chambers@example.com','+6592853567','$2b$12$lypBeGM2THMrAFbuQwzFuetf7Fp1WjwNvQG9bGcU3Qzke7B9TLwDa');
+INSERT INTO users VALUES (DEFAULT,'Adam','Holt','adam.holt','adam.holt@example.com','+6589519758','$2b$12$puZQu1YqL985WEDTfBgN3el2fwrkRcf2wrd/fk8SlGtIZ58MI3NK.');
+INSERT INTO users VALUES (DEFAULT,'Naomi','Lamb','naomi.lamb','naomi.lamb@example.com','+6597051180','$2b$12$Wd6LCBaL7zMfha1tuNTt1uLxRBOPwM6qjhg2T/tL5SCI64Y0IRJRe');
+INSERT INTO users VALUES (DEFAULT,'Miles','Nguyen','miles.nguyen','miles.nguyen@example.com','+6582675793','$2b$12$VLQ.Y02Fph6lVlTshpOTsucHAl/OXjICUdnJ0Zgk3ATv3zkuC0R2a');
+INSERT INTO users VALUES (DEFAULT,'Everly','Sharp','everly.sharp','everly.sharp@example.com','+6585778846','$2b$12$9zzzGHhcpwDMbvDxWemWtuSxWCvnOwkgtxqkrgUDQhbahu6trQjB6');
+INSERT INTO users VALUES (DEFAULT,'Lincoln','Horton','lincoln.horton','lincoln.horton@example.com','+6592971931','$2b$12$idXEDpzvRCsNwattO70zW.byAbVs2ibFcMILbas7BV8rfNOa1eBw.');
+INSERT INTO users VALUES (DEFAULT,'Elena','Walters','elena.walters','elena.walters@example.com','+6593812188','$2b$12$J/vt6x9D8hkJbmta3tqoJeotI84.Ormb/C7lNp4mnGKcXpwykWz0e');
+INSERT INTO users VALUES (DEFAULT,'Giovanni','Harper','giovanni.harper','giovanni.harper@example.com','+6597658315','$2b$12$t4YrKha5HGb1FWGDWh9iou38bhdx3j5LCUvE.j.2V6zkRlo2uDY/m');
+INSERT INTO users VALUES (DEFAULT,'Skylar','Mendoza','skylar.mendoza','skylar.mendoza@example.com','+6582129756','$2b$12$ZWd1VcrIhXrg3xhzNw22rehkUODOtxYahO6VuS8pKqStOdd5U3kTy');
