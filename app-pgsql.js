@@ -110,12 +110,6 @@ app.post('/auth/login', async (request, response) => {
 app.post('/auth/register', async (request, response) => {
   const { firstName, lastName, username, email, mobile, password } = request.body
 
-  // Hash the password
-  const hashedPassword = await bcrypt.hash(password, 12)
-
-  // Prepare SQL query to insert new user
-
-
   try {
     // Check if email already exists
     const user = await client.query(getUserQuery, [email])
@@ -124,6 +118,9 @@ app.post('/auth/register', async (request, response) => {
     if (user.rows.length > 0) {
       return response.status(400).render('message', { subject: "Registration failed", message: 'Email address is already registered' })
     }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 12)
 
     // Execute the insert query
     await client.query(insertQuery, [firstName, lastName, username, email, mobile, hashedPassword])
