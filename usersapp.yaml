@@ -160,10 +160,9 @@ spec:
         imagePullPolicy: IfNotPresent
         command: ["/bin/bash", "-c"]
         args:
-        - cp -r /etc/usersapp /var/run/ &&
-          npm install express express-session mysql2 pg path dotenv bcrypt hbs jsonwebtoken crypto cookie-parser &&
+        - npm install express express-session mysql2 pg path dotenv bcrypt hbs jsonwebtoken crypto cookie-parser &&
           node app.js
-        workingDir: /var/run/usersapp
+        workingDir: /etc/usersapp
         env:
         - name: DB_TYPE
           value: mysql
@@ -176,14 +175,15 @@ spec:
         - name: DB_PASSWORD
           value: password
         - name: JWT_PRIVATE_KEY
-          value: /var/run/usersapp/pki/jwt.key
+          value: /etc/usersapp/pki/jwt.key
         - name: JWT_PUBLIC_KEY
-          value: /var/run/usersapp/pki/jwt.pem
+          value: /etc/usersapp/pki/jwt.pem
         volumeMounts:
         - mountPath: /etc/usersapp/pki
           name: node-pki
           readOnly: true
-        - mountPath: /etc/usersapp
+        - mountPath: /etc/usersapp/app.js
+          subPath: app.js
           name: node-app
           readOnly: true
         - mountPath: /etc/usersapp/views
