@@ -47,9 +47,9 @@ app.use(express.urlencoded({ extended: false })) //parse x-www-form-urlencoded b
 app.use(cookieParser()) //parse cookies
 
 // Setup middleware view engine to generate pages using hbs
-app.use(express.static(path.join(__dirname, 'static')))
+app.use(express.static(path.join(process.cwd(), 'static')))
 app.set('view engine', 'hbs')
-app.set('views', path.join(__dirname, 'views'))
+app.set('views', path.join(process.cwd(), 'views'))
 
 // Routes
 app.get('/', (request, response) => response.render('index'))
