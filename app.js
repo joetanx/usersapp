@@ -28,10 +28,10 @@ const insertUserQuery = (dbType == 'pgsql') ? `INSERT INTO users (id, firstname,
 
 let client
 
-if (process.env.DB_TYPE == 'mysql') {
+if (dbType == 'mysql') {
   const mysql = require('mysql2')
   client = mysql.createConnection(connectionConfig)
-} else if (process.env.DB_TYPE == 'pgsql') {
+} else if (dbType == 'pgsql') {
   const { Client } = require('pg')
   client = new Client(connectionConfig)
   client.connect().then(() => console.log('Connected to PostgreSQL database'))
