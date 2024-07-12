@@ -1,0 +1,201 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: usersapp
+spec:
+  clusterIP: None
+  selector:
+    app: mysql
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pgsql
+  namespace: usersapp
+spec:
+  clusterIP: None
+  selector:
+    app: pgsql
+  ports:
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node
+  namespace: usersapp
+spec:
+  clusterIP: None
+  selector:
+    app: node
+  ports:
+  - protocol: TCP
+    port: 3000
+    targetPort: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: usersapp
+  namespace: usersapp
+  annotations:
+    cert-manager.io/cluster-issuer: ca-issuer
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: usersapp.vx
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: node
+            port:
+              number: 3000
+  tls:
+  - hosts:
+    - usersapp.vx
+    secretName: usersapp-tls
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+  namespace: usersapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: docker.io/library/mysql:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: MYSQL_DATABASE
+          value: users
+        - name: MYSQL_USER
+          value: node
+        - name: MYSQL_PASSWORD
+          value: password
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootpassword
+        volumeMounts:
+        - mountPath: /docker-entrypoint-initdb.d
+          name: db-mysql
+          readOnly: true
+      volumes:
+      - name: db-mysql
+        configMap:
+          name: db-mysql
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pgsql
+  labels:
+    app: pgsql
+  namespace: usersapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pgsql
+  template:
+    metadata:
+      labels:
+        app: pgsql
+    spec:
+      containers:
+      - name: pgsql
+        image: docker.io/library/postgres:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: POSTGRES_PASSWORD
+          value: postgrespassword
+        volumeMounts:
+        - mountPath: /docker-entrypoint-initdb.d
+          name: db-pgsql
+          readOnly: true
+      volumes:
+      - name: db-pgsql
+        configMap:
+          name: db-pgsql
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node
+  labels:
+    app: node
+  namespace: usersapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node
+  template:
+    metadata:
+      labels:
+        app: node
+    spec:
+      containers:
+      - name: node
+        image: docker.io/library/node:latest
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        args:
+        - cp -r /etc/usersapp /var/run/ &&
+          npm install express express-session mysql2 pg path dotenv bcrypt hbs jsonwebtoken crypto cookie-parser &&
+          node app.js
+        workingDir: /var/run/usersapp
+        env:
+        - name: DB_TYPE
+          value: mysql
+        - name: DB_HOST
+          value: mysql.usersapp.svc.cluster.local
+        - name: DB_NAME
+          value: users
+        - name: DB_USER
+          value: node
+        - name: DB_PASSWORD
+          value: password
+        - name: JWT_PRIVATE_KEY
+          value: /var/run/usersapp/pki/jwt.key
+        - name: JWT_PUBLIC_KEY
+          value: /var/run/usersapp/pki/jwt.pem
+        volumeMounts:
+        - mountPath: /etc/usersapp/pki
+          name: node-pki
+          readOnly: true
+        - mountPath: /etc/usersapp
+          name: node-app
+          readOnly: true
+        - mountPath: /etc/usersapp/views
+          name: node-views
+          readOnly: true
+      volumes:
+      - name: node-app
+        configMap:
+          name: node-app
+      - name: node-pki
+        configMap:
+          name: node-pki
+      - name: node-views
+        configMap:
+          name: node-views
