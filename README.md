@@ -38,11 +38,11 @@ Database type is selected by the `DB_TYPE` environment variable: `mysql` or `pgs
 >
 > Examples:
 >
-> ```
+> ```js
 > const getUserQuery = (dbType == 'pgsql') ? `SELECT * FROM users WHERE email = $1` : `SELECT * FROM users WHERE email = ?`
 > ```
 >
-> ```
+> ```js
 > await (dbType == 'pgsql') ? client.query(insertUserQuery, <parameters>) : client.promise().execute(insertUserQuery, <parameters>)
 > ```
 
@@ -142,11 +142,145 @@ Renders the registration page.
 - **Parameters**: JWT token in the `Authorization` header.
 - **Returns**: JSON response with user details on success; error message on failure.
 
-## 2. Setup
+### 1.8. Deployment
 
-### 2.1. MySQL
+This guide walks through 3 methods to deploy the users app:
+- [Kubernetes](#2-deployment-on-kubernetes)
+- [Podman](#3-deployment-on-podman)
+- [Manual install](#4-deployment-via-manual-install)
 
-#### 2.1.1. Install
+> [!Warning]
+>
+> The deployment configurations are insecure (e.g. embedding passwords and keys using environment variables and ConfigMaps)
+>
+> Perform appropriate secure edits if adapting to production environment
+
+## 2. Deployment on Kubernetes
+
+### 2.1. Kubernetes manifest
+
+The [`usersapp.yaml`](/usersapp.yaml) in this repository defines services, deployments, and an ingress for the app within the `usersapp` namespace.
+
+#### 2.1.1. Services
+
+|Name|Type|Port|Selectors|
+|---|---|---|---|
+|mysql|ClusterIP|3306|`app: mysql`|
+|pgsql|ClusterIP|5432|`app: pgsql`|
+|node|ClusterIP|3000|`app: node`|
+
+> [!note]
+>
+> Kubernetes services are accessible within the cluster on `<service-name>.<namespace>.svc.cluster.local`
+>
+> e.g. `mysql.usersapp.svc.cluster.local`, `pgsql.usersapp.svc.cluster.local`, `node.usersapp.svc.cluster.local`
+
+#### 2.1.2. Deployments
+
+**mysql**
+
+- Pods label: `app: mysql`
+- Runs MySQL database (`docker.io/library/mysql:latest`)
+- Configured with environment variables for database setup (`MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD`)
+- Mounts a ConfigMap (`db-mysql`) on `/docker-entrypoint-initdb.d` for database initialization script
+
+**pgsql**
+
+- Pods label: `app: pgsql`
+- Runs MySQL database (`docker.io/library/postgres:latest`)
+- Configured with environment variables for database setup (`POSTGRES_PASSWORD`)
+- Mounts a ConfigMap (`db-mysql`) on `/docker-entrypoint-initdb.d` for database initialization script
+
+> [!Note]
+>
+> Unlike the `mysql` container image, the `postgres` container image does not expose environment variable to creates additional database users
+>
+> User creation lines will be added to the database initialization script in the preparation steps below to create the `node` database user
+
+**node**
+
+- Runs Node.js application (`docker.io/library/node:latest`)
+- Installs required npm packages and starts the application (`npm install ... && node app.js`)
+- Configured with environment variables for database connection (`DB_TYPE`, `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`), JWT keys (`JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`)
+- Mounts ConfigMaps for application code (`node-app`), SSL certificates (`node-pki`), and view templates (`node-views`)
+
+#### 2.1.3. Ingress
+
+- **Name**: usersapp
+- **Annotations**: Uses `cert-manager.io/cluster-issuer: ca-issuer` for SSL certificates
+- **TLS**: Enables HTTPS with a TLS secret (`usersapp-tls`)
+- **Routing**: Directs traffic from `usersapp.vx` to the Node.js service (`node`) on path `/`
+
+### 2.2. Deployment
+
+Create namespace:
+
+```sh
+kubectl create namespace usersapp
+```
+
+Download database scripts:
+
+```sh
+curl -sLO https://github.com/joetanx/usersapp/raw/main/users-my.sql
+curl -sLO https://github.com/joetanx/usersapp/raw/main/users-pg.sql
+```
+
+Add Postgres user creation to `users-pg.sql`:
+
+```sh
+cat << EOF >> users-pg.sql
+CREATE ROLE node WITH LOGIN PASSWORD 'password';
+GRANT ALL ON users TO node;
+GRANT USAGE ON SEQUENCE users_id_seq TO node;
+EOF
+```
+
+Create ConfigMap for mysql and pgsql:
+
+```sh
+kubectl -n usersapp create configmap db-mysql --from-file=users-my.sql
+kubectl -n usersapp create configmap db-pgsql --from-file=users-pg.sql
+```
+
+Download keys, application code and view templates:
+
+```sh
+curl -sLo jwt.key https://github.com/joetanx/lab-certs/raw/main/ca/lab_issuer.key
+curl -sLo jwt.pem https://github.com/joetanx/lab-certs/raw/main/ca/lab_issuer.pem
+curl -sLO https://github.com/joetanx/usersapp/raw/main/app.js
+curl -sLo index.hbs https://github.com/joetanx/usersapp/raw/main/index.html
+curl -sLo login.hbs https://github.com/joetanx/usersapp/raw/main/login.html
+curl -sLo register.hbs https://github.com/joetanx/usersapp/raw/main/register.html
+curl -sLo home.hbs https://github.com/joetanx/usersapp/raw/main/home.html
+curl -sLo message.hbs https://github.com/joetanx/usersapp/raw/main/message.html
+```
+
+Create ConfigMap for node:
+
+```sh
+kubectl -n usersapp create configmap node-pki --from-file=jwt.key --from-file=jwt.pem
+kubectl -n usersapp create configmap node-app --from-file=app.js
+kubectl -n usersapp create configmap node-views --from-file=index.hbs --from-file=login.hbs --from-file=register.hbs --from-file=home.hbs --from-file=message.hbs
+```
+
+Deploy:
+
+```sh
+kubectl create -f https://github.com/joetanx/usersapp/raw/main/usersapp.yaml
+```
+
+Optional - clean up files: `rm -f *.sql jwt.* app.js *.hbs`
+
+## 3. Deployment on Podman
+
+## 4. Deployment via manual install
+
+## 4. Database Setup
+
+### 4.1. MySQL
+
+#### 4.1.1. Install
 
 ```
 yum -y install mysql-server
@@ -154,7 +288,7 @@ systemctl enable --now mysqld
 firewall-cmd --add-service mysql --permanent && firewall-cmd --reload
 ```
 
-#### 2.1.2. Populate database
+#### 4.1.2. Populate database
 
 ```
 curl -sLo /tmp/users-my.sql https://github.com/joetanx/users-app/raw/main/users-my.sql
@@ -174,7 +308,7 @@ Test query - search for a user:
 mysql -u root -e "SELECT id,firstName,lastName,username,email,mobile,password FROM users.users WHERE firstName LIKE '%jack%';"
 ```
 
-#### 2.1.3. Setup user
+#### 4.1.3. Setup user
 
 ```
 mysql -u root -e "CREATE USER 'node'@'%' IDENTIFIED BY 'password';"
@@ -182,9 +316,9 @@ mysql -u root -e "GRANT ALL PRIVILEGES ON users.* TO 'node'@'%';"
 rm -f /root/.mysql_history
 ```
 
-### 2.2. PostgreSQL
+### 4.2. PostgreSQL
 
-#### 2.2.1. Install
+#### 4.2.1. Install
 
 ```
 yum -y install postgresql-server postgresql-contrib
@@ -193,7 +327,7 @@ systemctl enable --now postgresql
 firewall-cmd --add-service postgresql --permanent && firewall-cmd --reload
 ```
 
-#### 2.2.2. Populate database
+#### 4.2.2. Populate database
 
 ```
 cd /var/lib/pgsql
@@ -233,7 +367,7 @@ sudo -u postgres psql -d users -c "INSERT INTO users VALUES (DEFAULT,'Liam','Joh
 
 </details>
 
-#### 2.2.3. Configure authentication
+#### 4.2.3. Configure authentication
 
 Configure `/var/lib/pgsql/data/pg_hba.conf` to use password authentication over `scram-sha-256` hashing
 
@@ -282,7 +416,7 @@ Restart PostgreSQL
 systemctl restart postgresql
 ```
 
-#### 2.2.4. Setup user
+#### 4.2.4. Setup user
 
 ```
 cd /var/lib/pgsql
