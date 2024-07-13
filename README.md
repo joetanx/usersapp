@@ -274,6 +274,125 @@ Optional - clean up files: `rm -f *.sql jwt.* app.js *.hbs`
 
 ## 3. Deployment on Podman
 
+### 3.1. Preparation
+
+Install necessary packages and configure firewall rules:
+
+```sh
+yum -y install podman jq
+firewall-cmd --permanent --add-service mysql && \
+firewall-cmd --permanent --add-service postgresql && \
+firewall-cmd --permanent --add-port 3000/tcp && \
+firewall-cmd --permanent --add-service https && \
+firewall-cmd --reload
+```
+
+### 3.2. Deploy MySQL and PostgreSQL
+
+Download database scripts:
+
+```sh
+mkdir /etc/usersapp
+curl -sLo /etc/usersapp/users-my.sql https://github.com/joetanx/usersapp/raw/main/users-my.sql
+curl -sLo /etc/usersapp/users-pg.sql https://github.com/joetanx/usersapp/raw/main/users-pg.sql
+```
+
+Add Postgres user creation to `users-pg.sql`:
+
+> [!Note]
+>
+> Unlike the `mysql` container image, the `postgres` container image does not expose environment variable to creates additional database users
+>
+> User creation lines are added to the database initialization script create the `node` database user
+
+```sh
+cat << EOF >> /etc/usersapp/users-pg.sql
+CREATE ROLE node WITH LOGIN PASSWORD 'password';
+GRANT ALL ON users TO node;
+GRANT USAGE ON SEQUENCE users_id_seq TO node;
+EOF
+```
+
+Deploy MySQL and PostgreSQL containers with initial setup scripts:
+
+```sh
+# MySQL deployment
+podman run -d -p 3306:3306 \
+-v /etc/usersapp/users-my.sql:/docker-entrypoint-initdb.d/users-my.sql \
+-e MYSQL_DATABASE=users \
+-e MYSQL_USER=node \
+-e MYSQL_PASSWORD=password \
+-e MYSQL_ROOT_PASSWORD=rootpassword \
+--name mysql docker.io/library/mysql:latest
+
+# PostgreSQL deployment
+podman run -d -p 5432:5432 \
+-v /etc/usersapp/users-pg.sql:/docker-entrypoint-initdb.d/users-pg.sql \
+-e POSTGRES_PASSWORD=postgrespassword \
+--name postgres docker.io/library/postgres:latest
+```
+
+### 3.3. Deploy Node.js Application
+
+Download keys, application code and view templates:
+
+```sh
+mkdir /etc/usersapp/views /etc/usersapp/pki
+curl -sLo /etc/usersapp/pki/jwt.key https://github.com/joetanx/lab-certs/raw/main/ca/lab_issuer.key
+curl -sLo /etc/usersapp/pki/jwt.pem https://github.com/joetanx/lab-certs/raw/main/ca/lab_issuer.pem
+curl -sLo /etc/usersapp/app.js https://github.com/joetanx/usersapp/raw/main/app.js
+curl -sLo /etc/usersapp/views/index.hbs https://github.com/joetanx/usersapp/raw/main/index.html
+curl -sLo /etc/usersapp/views/login.hbs https://github.com/joetanx/usersapp/raw/main/login.html
+curl -sLo /etc/usersapp/views/register.hbs https://github.com/joetanx/usersapp/raw/main/register.html
+curl -sLo /etc/usersapp/views/home.hbs https://github.com/joetanx/usersapp/raw/main/home.html
+curl -sLo /etc/usersapp/views/message.hbs https://github.com/joetanx/usersapp/raw/main/message.html
+```
+
+Deploy the Node.js application container:
+
+```sh
+podman run -d -p 3000:3000 \
+-v /etc/usersapp:/etc/usersapp:Z \
+-e DB_TYPE='mysql' \
+-e DB_HOST=$(hostname) \
+-e DB_NAME='users' \
+-e DB_USER='node' \
+-e DB_PASSWORD='password' \
+-e JWT_PRIVATE_KEY='/etc/usersapp/pki/jwt.key' \
+-e JWT_PUBLIC_KEY='/etc/usersapp/pki/jwt.pem' \
+-w /etc/usersapp \
+--name node node:latest /bin/bash -c "npm install express express-session mysql2 pg path dotenv bcrypt hbs jsonwebtoken cookie-parser && node app.js"
+```
+
+### 3.4. Deploy Nginx
+
+Nginx container is used for reverse proxy and SSL termination.
+
+Download certificates and Nginx config file:
+
+```sh
+mkdir -p /etc/nginx/ssl
+curl -sLo /etc/nginx/ssl/server.pem https://github.com/joetanx/lab-certs/raw/main/others/$(hostname).pem
+curl -sLo /etc/nginx/ssl/server.key https://github.com/joetanx/lab-certs/raw/main/others/$(hostname).key
+curl -sLo /etc/nginx/ssl/cacert.pem https://github.com/joetanx/lab-certs/raw/main/ca/lab_root.pem
+curl -sLo /etc/nginx/nginx.conf https://github.com/joetanx/usersapp/raw/main/nginx.conf
+```
+
+Edit Nginx config file to environment parameters:
+
+```sh
+cat /etc/nginx/nginx.conf | sed "s/listen_host/$(hostname)/"  | sed "s/dst_host/$(hostname)/" > /etc/nginx/nginx.conf
+```
+
+Deploy the Nginx container:
+
+```sh
+podman run -d -p 443:443 \
+-v /etc/nginx/ssl:/etc/nginx/ssl:ro \
+-v /etc/nginx/nginx.conf:/etc/nginx/nginx.conf:ro \
+--name nginx docker.io/library/nginx:latest
+```
+
 ## 4. Deployment via manual install
 
 ## 4. Database Setup
