@@ -395,98 +395,64 @@ podman run -d -p 443:443 \
 
 ## 4. Deployment via manual install
 
-## 4. Database Setup
+### 4.1. Preparation
 
-### 4.1. MySQL
+Install necessary packages and configure firewall rules:
 
-#### 4.1.1. Install
-
+```sh
+yum -y install mysql-server postgresql-server nodejs jq nginx
+firewall-cmd --permanent --add-service mysql && \
+firewall-cmd --permanent --add-service postgresql && \
+firewall-cmd --permanent --add-port 3000/tcp && \
+firewall-cmd --permanent --add-service https && \
+firewall-cmd --reload
 ```
-yum -y install mysql-server
+
+### 4.2. Setup Databases
+
+#### 4.2.1. MySQL
+
+Enable and populate database:
+
+```sh
 systemctl enable --now mysqld
-firewall-cmd --add-service mysql --permanent && firewall-cmd --reload
-```
-
-#### 4.1.2. Populate database
-
-```
-curl -sLo /tmp/users-my.sql https://github.com/joetanx/users-app/raw/main/users-my.sql
+curl -sLo /tmp/users-my.sql https://github.com/joetanx/usersapp/raw/main/users-my.sql
 mysql -u root < /tmp/users-my.sql
-rm -f /tmp/users-my.sql
 ```
 
-Test query - retrieve a row randomly:
+Create `node` database user:
 
+```sh
+mysql -u root -e "CREATE USER 'node'@'%' IDENTIFIED BY 'password';"
+mysql -u root -e "GRANT ALL PRIVILEGES ON users.* TO 'node'@'%';"
 ```
+
+<details><summary>MySQL Test Queries:</summary>
+
+Retrieve a random row:
+
+```sh
 mysql -u root -e "SELECT id,firstName,lastName,username,email,mobile,password FROM users.users ORDER BY RAND() LIMIT 0,1;"
 ```
 
-Test query - search for a user:
+Search for a user:
 
-```
+```sh
 mysql -u root -e "SELECT id,firstName,lastName,username,email,mobile,password FROM users.users WHERE firstName LIKE '%jack%';"
-```
-
-#### 4.1.3. Setup user
-
-```
-mysql -u root -e "CREATE USER 'node'@'%' IDENTIFIED BY 'password';"
-mysql -u root -e "GRANT ALL PRIVILEGES ON users.* TO 'node'@'%';"
-rm -f /root/.mysql_history
-```
-
-### 4.2. PostgreSQL
-
-#### 4.2.1. Install
-
-```
-yum -y install postgresql-server postgresql-contrib
-postgresql-setup --initdb
-systemctl enable --now postgresql
-firewall-cmd --add-service postgresql --permanent && firewall-cmd --reload
-```
-
-#### 4.2.2. Populate database
-
-```
-cd /var/lib/pgsql
-curl -sLo /tmp/users-pg.sql https://github.com/joetanx/users-app/raw/main/users-pg.sql
-sudo -u postgres psql -d postgres -f /tmp/users-pg.sql
-rm -f /tmp/users-pg.sql
-cd ~
-```
-
-Test query - retrieve a row randomly:
-
-```
-sudo -u postgres psql -d users -c "SELECT id,firstName,lastName,username,email,mobile,password FROM users ORDER BY RANDOM() LIMIT 1 OFFSET 0;"
-```
-
-Test query - search for a user:
-
-```
-sudo -u postgres psql -d users -c "SELECT id,firstName,lastName,username,email,mobile,password FROM users WHERE LOWER(firstName) LIKE '%jack%';"
-```
-
-<details><summary>Manually create database, table and insert data</summary>
-
-```
-echo "SELECT 'CREATE DATABASE users' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'users')\gexec" | sudo -u postgres psql -d postgres
-sudo -u postgres psql -d users -c "
-CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
-  firstName VARCHAR(128) NOT NULL DEFAULT '',
-  lastName VARCHAR(128) NOT NULL DEFAULT '',
-  email VARCHAR(128) NOT NULL DEFAULT '',
-  mobile VARCHAR(128) NOT NULL DEFAULT ''
-);"
-sudo -u postgres psql -d users -c "INSERT INTO users VALUES (DEFAULT,'Liam','Johnson','liam.johnson','liam.johnson@example.com','+6584582486','$2b$12$BH7SkO8BNUFdYpOU60INqutF79m0g6W9Sonzkit2e2poyADGGVJiO');"
-⋮
 ```
 
 </details>
 
-#### 4.2.3. Configure authentication
+#### 4.2.2. PostgreSQL
+
+Initialize, enable and populate database:
+
+```sh
+postgresql-setup --initdb
+systemctl enable --now postgresql
+curl -sLo /tmp/users-pg.sql https://github.com/joetanx/users-app/raw/main/users-pg.sql
+sudo -u postgres psql -d postgres -f /tmp/users-pg.sql
+```
 
 Configure `/var/lib/pgsql/data/pg_hba.conf` to use password authentication over `scram-sha-256` hashing
 
@@ -506,7 +472,7 @@ local   replication     all                                     peer
 ⋮
 ```
 
-Configure `/var/lib/pgsql/data/postgresql.conf` to listen on all addresses and enable `scram-sha-256` hashing
+Configure `/var/lib/pgsql/data/postgresql.conf` to listen on all addresses and enable `scram-sha-256` hashing:
 
 ```
 ⋮
@@ -529,25 +495,131 @@ password_encryption = scram-sha-256
 ⋮
 ```
 
-Restart PostgreSQL
+Restart PostgreSQL:
 
 ```
 systemctl restart postgresql
 ```
 
-#### 4.2.4. Setup user
+Create `node` database user:
 
 ```
-cd /var/lib/pgsql
 sudo -u postgres psql -c "CREATE ROLE node WITH LOGIN PASSWORD 'password';"
 sudo -u postgres psql -d users -c "GRANT ALL ON users TO node;"
 sudo -u postgres psql -d users -c "GRANT USAGE ON SEQUENCE users_id_seq TO node;"
-rm -f /var/lib/pgsql/.psql_history /root/.psql_history
-cd ~
 ```
 
-Resetting user password (if needed)
+Reset user password (if needed):
 
 ```
 sudo -u postgres psql -c "ALTER USER node WITH PASSWORD 'password';"
+```
+
+<details><summary>PostgreSQL Test Queries:</summary>
+
+Retrieve a random row:
+
+```sh
+sudo -u postgres psql -d users -c "SELECT id,firstName,lastName,username,email,mobile,password FROM users ORDER BY RANDOM() LIMIT 1 OFFSET 0;"
+```
+
+Search for a user:
+
+```sh
+sudo -u postgres psql -d users -c "SELECT id,firstName,lastName,username,email,mobile,password FROM users WHERE LOWER(firstName) LIKE '%jack%';"
+```
+
+</details>
+
+#### 4.2.3. Clean-up
+
+```sh
+rm -f /tmp/users-my.sql /tmp/users-pg.sql /root/.mysql_history /var/lib/pgsql/.psql_history /root/.psql_history
+```
+
+### 4.3. Deploy Node.js Application
+
+Install NPM modules, create `.env` file and download keys, application code and view templates:
+
+```sh
+mkdir -p /etc/usersapp/views /etc/usersapp/pki
+cd /etc/usersapp
+npm install express express-session mysql2 pg path dotenv bcrypt hbs jsonwebtoken cookie-parser
+cat << EOF > /etc/usersapp/.env
+DB_TYPE = mysql
+DB_HOST = $(hostname)
+DB_NAME = users
+DB_USER = node
+DB_PASSWORD = password
+JWT_PRIVATE_KEY = /etc/usersapp/pki/jwt.key
+JWT_PUBLIC_KEY = /etc/usersapp/pki/jwt.pem
+EOF
+curl -sLo /etc/usersapp/pki/jwt.key https://github.com/joetanx/lab-certs/raw/main/ca/lab_issuer.key
+curl -sLo /etc/usersapp/pki/jwt.pem https://github.com/joetanx/lab-certs/raw/main/ca/lab_issuer.pem
+curl -sLo /etc/usersapp/app.js https://github.com/joetanx/usersapp/raw/main/app.js
+curl -sLo /etc/usersapp/views/index.hbs https://github.com/joetanx/usersapp/raw/main/index.html
+curl -sLo /etc/usersapp/views/login.hbs https://github.com/joetanx/usersapp/raw/main/login.html
+curl -sLo /etc/usersapp/views/register.hbs https://github.com/joetanx/usersapp/raw/main/register.html
+curl -sLo /etc/usersapp/views/home.hbs https://github.com/joetanx/usersapp/raw/main/home.html
+curl -sLo /etc/usersapp/views/message.hbs https://github.com/joetanx/usersapp/raw/main/message.html
+```
+
+Run the application:
+
+```sh
+node app.js
+```
+
+<details><summary>Run Node.js application as <code>systemd</code> unit file:</summary>
+
+```sh
+cat << EOF > /lib/systemd/system/usersapp.service
+[Unit]
+Description=Run node.js usersapp
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node /etc/usersapp/app.js
+WorkingDirectory=/etc/usersapp
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl enable --now usersapp
+```
+
+</details>
+
+### 4.3. Deploy Nginx
+
+Nginx is used for reverse proxy and SSL termination.
+
+Download certificates and Nginx config file:
+
+```sh
+mkdir /etc/nginx/ssl
+curl -sLo /etc/nginx/ssl/server.pem https://github.com/joetanx/lab-certs/raw/main/others/$(hostname).pem
+curl -sLo /etc/nginx/ssl/server.key https://github.com/joetanx/lab-certs/raw/main/others/$(hostname).key
+curl -sLo /etc/nginx/ssl/cacert.pem https://github.com/joetanx/lab-certs/raw/main/ca/lab_issuer.pem
+curl -sLo /etc/nginx/nginx.conf https://github.com/joetanx/usersapp/raw/main/nginx.conf
+```
+
+Edit Nginx config file to environment parameters:
+
+```sh
+cat /etc/nginx/nginx.conf | sed "s/listen_host/$(hostname)/"  | sed "s/dst_host/$(hostname)/" > /etc/nginx/nginx.conf
+```
+
+Configure SELinux setting to allow Nginx to connect Node.js:
+
+```sh
+setsebool -P httpd_can_network_connect 1
+getsebool -a | grep httpd_can_network_connect
+```
+
+Deploy the Nginx:
+
+```sh
+systemctl enable --now nginx
 ```
