@@ -177,7 +177,7 @@ spec:
         - name: JWT_PRIVATE_KEY
           value: /etc/usersapp/pki/jwt.key
         - name: JWT_PUBLIC_KEY
-          value: /etc/usersapp/pki/jwt.pub
+          value: /etc/usersapp/pki/jwt.pem
         volumeMounts:
         - mountPath: /etc/usersapp/pki
           name: node-pki
