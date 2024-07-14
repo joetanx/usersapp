@@ -103,44 +103,171 @@ The express server listens on port `3000` with the configurations below:
 
 #### 1.7.1. Browser Access
 
-**`GET /`**
+##### 1.7.1.1. `GET /`
 
-Renders the index/intro page.
+Renders the index/intro page
 
-**`GET /login`**
+![image](https://github.com/user-attachments/assets/5523123a-b22b-4ace-b879-73d5067f5aec)
 
-Renders the login page.
+##### 1.7.1.2. `GET /login`
 
-**`GET /register`**
+Renders the login page
+- The `Login` button is disabled until both email address and password are filled in
+- The `Email address` field checks for proper email format input
+
+![image](https://github.com/user-attachments/assets/ad037a75-f82c-426c-af24-713a14770a8b)
+
+##### 1.7.1.3. `GET /register`
 
 Renders the registration page.
+- The `Sign up` button is disabled unless:
+  - All fields are filled in
+  - Input to the `Password` and `Confirm Password` fields are identical
+- The `Confirm Password` field warns when it is different from the `Password field
 
-**`POST /auth/login`**
+![image](https://github.com/user-attachments/assets/71e00f14-b3f2-4585-bd4a-1465582d2d2a)
+
+##### 1.7.1.4. `POST /auth/login`
+
 - **Purpose**: Handles user login from browser.
 - **Parameters**: `email`, `password` - Credentials submitted in the request body.
 - **Returns**: Redirects to `/home` on successful login; renders error `message` on failure.
 
-**`POST /auth/register`**
+Error for empty or non-existent email address:
+
+![image](https://github.com/user-attachments/assets/08436833-9c59-4a23-8b2f-f68d2bc925de)
+
+Error for incorrect password entered:
+
+![image](https://github.com/user-attachments/assets/be5202ab-7b8d-48c3-b772-2d90bff4a22f)
+
+> [!Note]
+>
+> Authentication error would likely be a generic `invalid email or password` in actual services
+>
+> This example app intentionally display different outputs between email and password error for easy debugging
+
+##### 1.7.1.5. `POST /auth/register`
+
 - **Purpose**: Handles user registration from browser.
 - **Parameters**: User details (`firstName`, `lastName`, `username`, `email`, `mobile`, `password`) submitted in the request body.
 - **Returns**: Renders success `message` upon successful registration; renders error `message` on failure.
 
-**`GET /home`**
+Successful registration:
+
+![image](https://github.com/user-attachments/assets/c2e328e7-cd59-494a-b164-5a107a7ec771)
+
+Error if email address already exists:
+
+![image](https://github.com/user-attachments/assets/5c90bd3e-e1bc-4549-af3e-c078f7d13510)
+
+##### 1.7.1.6. `GET /home`
+
 - **Purpose**: User home page.
 - **Parameters**: Requires a valid JWT token stored in cookies.
 - **Returns**: Renders `home` with user details on success; renders error `message` on failure.
 
+Error message when loading `/home` without authentication (non-existent, expired or invalid JWT in cookies):
+
+![image](https://github.com/user-attachments/assets/2f9e7682-8fa2-49ed-8e78-d29fb2463ac2)
+
+Loading `/home` with valid JWT:
+
+![image](https://github.com/user-attachments/assets/3e9fec27-e510-4555-87a2-8875793480da)
+
 #### 1.7.2. API Access
 
-**`POST /api/login`**
+##### 1.7.2.1. `POST /api/login`
+
 - **Purpose**: Handles user login via API.
 - **Parameters**: `email`, `password` - Credentials submitted in the request body.
 - **Returns**: JSON response with authentication status and JWT token on success; error message on failure.
 
-**`GET /api/userinfo`**
+Login with empty or invalid email:
+
+```console
+[root@delta ~]# curl -s -H 'Content-Type: application/json' -X POST -d '{"email":"","password":"ryan.ward"}' https://usersapp.vx/api/login | jq
+{
+  "error": "User not found"
+}
+[root@delta ~]# curl -s -H 'Content-Type: application/json' -X POST -d '{"email":"ryan.ward@invalid.com","password":"ryan.ward"}' https://usersapp.vx/api/login | jq
+{
+  "error": "User not found"
+}
+```
+
+Login with missing parameters:
+
+```console
+[root@delta ~]# curl -s -H 'Content-Type: application/json' -X POST -d '{"email":"ryan.ward@example.com"}' https://usersapp.vx/api/login | jq
+{
+  "error": "Internal server error"
+}
+[root@delta ~]# curl -s -H 'Content-Type: application/json' -X POST -d '{"password":"ryan.ward"}' https://usersapp.vx/api/login | jq
+{
+  "error": "Internal server error"
+}
+[root@delta ~]# curl -s -H 'Content-Type: application/json' -X POST -d '{}' https://usersapp.vx/api/login | jq
+{
+  "error": "Internal server error"
+}
+```
+
+Login with incorrect password:
+
+```console
+[root@delta ~]# curl -s -H 'Content-Type: application/json' -X POST -d '{"email":"ryan.ward@example.com","password":"wrong.password"}' https://usersapp.vx/api/login | jq
+{
+  "error": "Incorrect password"
+}
+```
+
+Successful Logins:
+
+```console
+[root@delta ~]# curl -s -H 'Content-Type: application/json' -X POST -d '{"email":"ryan.ward@example.com","password":"ryan.ward"}' https://usersapp.vx/api/login | jq
+{
+  "authentication": "Successful",
+  "authorization": "eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InJ5YW4ud2FyZEBleGFtcGxlLmNvbSIsImlhdCI6MTcyMDkzOTY5MCwiZXhwIjoxNzIwOTQwMTcwfQ.iNacYpM4Ci_ykUXx3OKO4Gj3afHDLxpxoRSIK3JukbobZ1mzlJVGtMTLL9AEhc2J59_X170I0whIy13R3mnzW2QROgBiGJHZVEMjXrI5C6lq46P9TWFzwKEc-eE9ZRaB",
+  "message": "Welcome, ryan.ward"
+}
+[root@delta ~]# curl -s -H 'Content-Type: application/x-www-form-urlencoded' -X POST -d 'email=ryan.ward%40example.com&password=ryan.ward' https://usersapp.vx/api/login | jq
+{
+  "authentication": "Successful",
+  "authorization": "eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InJ5YW4ud2FyZEBleGFtcGxlLmNvbSIsImlhdCI6MTcyMDkzOTc1MSwiZXhwIjoxNzIwOTQwMjMxfQ.ZDIaqFmNxTNI4kJVbOG6OosgXfAaVAJni403FF0mAO3UwcgqnDkoNqd2YpNw1nxAv9_1o9r39r_wWaHU13dCza6b8IVvQEqPjWn9tQClP2lpJn35fP3Q94RVjh_v-tds",
+  "message": "Welcome, ryan.ward"
+}
+```
+
+##### 1.7.2.2. `GET /api/userinfo`
+
 - **Purpose**: Retrieves user information via API.
 - **Parameters**: JWT token in the `Authorization` header.
 - **Returns**: JSON response with user details on success; error message on failure.
+
+Retrieval without authorization:
+
+```console
+[root@delta ~]# curl -s https://usersapp.vx/api/userinfo | jq
+{
+  "error": "Unauthorized"
+}
+```
+
+Successful retrieval:
+
+```console
+[root@delta ~]# curl -s https://usersapp.vx/api/userinfo | jq
+[root@delta ~]# curl -s -H "Authorization: $jwt" https://usersapp.vx/api/userinfo | jq
+{
+  "id": 47,
+  "firstName": "Ryan",
+  "lastName": "Ward",
+  "username": "ryan.ward",
+  "email": "ryan.ward@example.com",
+  "mobile": "+6597029602"
+}
+```
 
 ### 1.8. Deployment
 
