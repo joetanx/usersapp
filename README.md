@@ -498,24 +498,24 @@ Nginx container is used for reverse proxy and SSL termination.
 Download certificates and Nginx config file:
 
 ```sh
-mkdir -p /etc/nginx/ssl
-curl -sLo /etc/nginx/ssl/server.pem https://github.com/joetanx/lab-certs/raw/main/others/$(hostname).pem
-curl -sLo /etc/nginx/ssl/server.key https://github.com/joetanx/lab-certs/raw/main/others/$(hostname).key
-curl -sLo /etc/nginx/ssl/cacert.pem https://github.com/joetanx/lab-certs/raw/main/ca/lab_root.pem
+mkdir -p /etc/nginx/tls
+curl -sLo /etc/nginx/tls/server.pem https://github.com/joetanx/lab-certs/raw/main/others/$(hostname).pem
+curl -sLo /etc/nginx/tls/server.key https://github.com/joetanx/lab-certs/raw/main/others/$(hostname).key
+curl -sLo /etc/nginx/tls/cacert.pem https://github.com/joetanx/lab-certs/raw/main/ca/lab_root.pem
 curl -sLo /etc/nginx/nginx.conf https://github.com/joetanx/usersapp/raw/main/nginx.conf
 ```
 
 Edit Nginx config file to environment parameters:
 
 ```sh
-cat /etc/nginx/nginx.conf | sed "s/listen_host/$(hostname)/"  | sed "s/dst_host/$(hostname)/" > /etc/nginx/nginx.conf
+cat /etc/nginx/nginx.conf | sed "s/dst_host/$(hostname)/" | sed 's/dst_port/3000/' | tee /etc/nginx/nginx.conf
 ```
 
 Deploy the Nginx container:
 
 ```sh
 podman run -d -p 443:443 \
--v /etc/nginx/ssl:/etc/nginx/ssl:ro \
+-v /etc/nginx/tls:/etc/nginx/tls:ro \
 -v /etc/nginx/nginx.conf:/etc/nginx/nginx.conf:ro \
 --name nginx docker.io/library/nginx:latest
 ```
@@ -725,17 +725,17 @@ Nginx is used for reverse proxy and SSL termination.
 Download certificates and Nginx config file:
 
 ```sh
-mkdir /etc/nginx/ssl
-curl -sLo /etc/nginx/ssl/server.pem https://github.com/joetanx/lab-certs/raw/main/others/$(hostname).pem
-curl -sLo /etc/nginx/ssl/server.key https://github.com/joetanx/lab-certs/raw/main/others/$(hostname).key
-curl -sLo /etc/nginx/ssl/cacert.pem https://github.com/joetanx/lab-certs/raw/main/ca/lab_issuer.pem
+mkdir /etc/nginx/tls
+curl -sLo /etc/nginx/tls/server.pem https://github.com/joetanx/lab-certs/raw/main/others/$(hostname).pem
+curl -sLo /etc/nginx/tls/server.key https://github.com/joetanx/lab-certs/raw/main/others/$(hostname).key
+curl -sLo /etc/nginx/tls/cacert.pem https://github.com/joetanx/lab-certs/raw/main/ca/lab_issuer.pem
 curl -sLo /etc/nginx/nginx.conf https://github.com/joetanx/usersapp/raw/main/nginx.conf
 ```
 
 Edit Nginx config file to environment parameters:
 
 ```sh
-cat /etc/nginx/nginx.conf | sed "s/listen_host/$(hostname)/"  | sed "s/dst_host/$(hostname)/" > /etc/nginx/nginx.conf
+cat /etc/nginx/nginx.conf | sed "s/dst_host/$(hostname)/" | sed 's/dst_port/3000/' | tee /etc/nginx/nginx.conf
 ```
 
 Configure SELinux setting to allow Nginx to connect Node.js:
