@@ -502,7 +502,7 @@ mkdir -p /etc/nginx/tls
 curl -sLo /etc/nginx/tls/server.pem https://github.com/joetanx/lab-certs/raw/main/others/$(hostname).pem
 curl -sLo /etc/nginx/tls/server.key https://github.com/joetanx/lab-certs/raw/main/others/$(hostname).key
 curl -sLo /etc/nginx/tls/cacert.pem https://github.com/joetanx/lab-certs/raw/main/ca/lab_root.pem
-curl -sLo /etc/nginx/nginx.conf https://github.com/joetanx/usersapp/raw/main/nginx.conf
+curl -sLo /etc/nginx/nginx.conf https://github.com/joetanx/setup/raw/main/nginx.conf
 ```
 
 Edit Nginx config file to environment parameters:
@@ -729,7 +729,7 @@ mkdir /etc/nginx/tls
 curl -sLo /etc/nginx/tls/server.pem https://github.com/joetanx/lab-certs/raw/main/others/$(hostname).pem
 curl -sLo /etc/nginx/tls/server.key https://github.com/joetanx/lab-certs/raw/main/others/$(hostname).key
 curl -sLo /etc/nginx/tls/cacert.pem https://github.com/joetanx/lab-certs/raw/main/ca/lab_issuer.pem
-curl -sLo /etc/nginx/nginx.conf https://github.com/joetanx/usersapp/raw/main/nginx.conf
+curl -sLo /etc/nginx/nginx.conf https://github.com/joetanx/setup/raw/main/nginx.conf
 ```
 
 Edit Nginx config file to environment parameters:
