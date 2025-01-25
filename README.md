@@ -103,13 +103,13 @@ The express server listens on port `3000` with the configurations below:
 
 #### 1.7.1. Browser Access
 
-##### 1.7.1.1. `GET /`
+##### 1.7.1.1. `GET` `/`
 
 Renders the index/intro page
 
 ![image](https://github.com/user-attachments/assets/5523123a-b22b-4ace-b879-73d5067f5aec)
 
-##### 1.7.1.2. `GET /login`
+##### 1.7.1.2. `GET` `/login`
 
 Renders the login page
 - The `Login` button is disabled until both email address and password are filled in
@@ -117,17 +117,17 @@ Renders the login page
 
 ![image](https://github.com/user-attachments/assets/ad037a75-f82c-426c-af24-713a14770a8b)
 
-##### 1.7.1.3. `GET /register`
+##### 1.7.1.3. `GET` `/register`
 
 Renders the registration page.
 - The `Sign up` button is disabled unless:
   - All fields are filled in
   - Input to the `Password` and `Confirm Password` fields are identical
-- The `Confirm Password` field warns when it is different from the `Password field
+- The `Confirm Password` field warns when it is different from the `Password` field
 
 ![image](https://github.com/user-attachments/assets/71e00f14-b3f2-4585-bd4a-1465582d2d2a)
 
-##### 1.7.1.4. `POST /auth/login`
+##### 1.7.1.4. `POST` `/auth/login`
 
 - **Purpose**: Handles user login from browser.
 - **Parameters**: `email`, `password` - Credentials submitted in the request body.
@@ -147,7 +147,7 @@ Error for incorrect password entered:
 >
 > This example app intentionally display different outputs between email and password error for easy debugging
 
-##### 1.7.1.5. `POST /auth/register`
+##### 1.7.1.5. `POST` `/auth/register`
 
 - **Purpose**: Handles user registration from browser.
 - **Parameters**: User details (`firstName`, `lastName`, `username`, `email`, `mobile`, `password`) submitted in the request body.
@@ -161,7 +161,7 @@ Error if email address already exists:
 
 ![image](https://github.com/user-attachments/assets/5c90bd3e-e1bc-4549-af3e-c078f7d13510)
 
-##### 1.7.1.6. `GET /home`
+##### 1.7.1.6. `GET` `/home`
 
 - **Purpose**: User home page.
 - **Parameters**: Requires a valid JWT token stored in cookies.
@@ -177,7 +177,7 @@ Loading `/home` with valid JWT:
 
 #### 1.7.2. API Access
 
-##### 1.7.2.1. `POST /api/login`
+##### 1.7.2.1. `POST` `/api/login`
 
 - **Purpose**: Handles user login via API.
 - **Parameters**: `email`, `password` - Credentials submitted in the request body.
@@ -239,7 +239,7 @@ Successful Logins:
 }
 ```
 
-##### 1.7.2.2. `GET /api/userinfo`
+##### 1.7.2.2. `GET` `/api/userinfo`
 
 - **Purpose**: Retrieves user information via API.
 - **Parameters**: JWT token in the `Authorization` header.
