@@ -577,7 +577,7 @@ Initialize, enable and populate database:
 ```sh
 postgresql-setup --initdb
 systemctl enable --now postgresql
-curl -sLo /tmp/users-pg.sql https://github.com/joetanx/users-app/raw/main/users-pg.sql
+curl -sLo /tmp/users-pg.sql https://github.com/joetanx/usersapp/raw/main/users-pg.sql
 sudo -u postgres psql -d postgres -f /tmp/users-pg.sql
 ```
 
