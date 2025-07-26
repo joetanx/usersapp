@@ -257,7 +257,6 @@ Retrieval without authorization:
 Successful retrieval:
 
 ```console
-[root@delta ~]# curl -s https://usersapp.vx/api/userinfo | jq
 [root@delta ~]# curl -s -H "Authorization: $jwt" https://usersapp.vx/api/userinfo | jq
 {
   "id": 47,
