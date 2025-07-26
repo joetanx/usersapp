@@ -11,31 +11,35 @@ const cookieParser = require('cookie-parser')
 const privateKey = fs.readFileSync(process.env.JWT_PRIVATE_KEY, 'utf8') // Load private key
 const publicKey = fs.readFileSync(process.env.JWT_PUBLIC_KEY, 'utf8') // Load public key
 
-const connectionConfig = {
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD
+const { randomUUID } = require('crypto');
+
+const myConnectionConfig = {
+  host: process.env.MY_HOST,
+  database: process.env.MY_DB,
+  user: process.env.MY_USER,
+  password: process.env.MY_PASSWORD
 }
+const mysql = require('mysql2')
+const myClient = mysql.createConnection(myConnectionConfig)
 
-const supportedDbTypes = ['mysql', 'pgsql']
-const dbType = process.env.DB_TYPE
-if (!supportedDbTypes.includes(dbType)) throw new Error('Invalid database type')
-
-// Prepare queries
-const getUserQuery = (dbType == 'pgsql') ? `SELECT * FROM users WHERE email = $1` : `SELECT * FROM users WHERE email = ?`
-const insertUserQuery = (dbType == 'pgsql') ? `INSERT INTO users (id, firstname, lastname, username, email, mobile, password) VALUES (DEFAULT, $1, $2, $3, $4, $5, $6)` : `INSERT INTO users (id, firstName, lastName, username, email, mobile, password) VALUES (DEFAULT, ?, ?, ?, ?, ?, ?)`
-
-let client
-
-if (dbType == 'mysql') {
-  const mysql = require('mysql2')
-  client = mysql.createConnection(connectionConfig)
-} else if (dbType == 'pgsql') {
-  const { Client } = require('pg')
-  client = new Client(connectionConfig)
-  client.connect().then(() => console.log('Connected to PostgreSQL database'))
+const pgConnectionConfig = {
+  host: process.env.PG_HOST,
+  database: process.env.PG_DB,
+  user: process.env.PG_USER,
+  password: process.env.PG_PASSWORD
 }
+const { Client } = require('pg')
+const pgClient = new Client(pgConnectionConfig)
+pgClient.connect().then(() => console.log('Connected to PostgreSQL database'))
+
+// MySQL queries
+const getUserAuthByEmail = `SELECT * FROM auth WHERE email = ?`
+const getUserAuthByGuid = `SELECT * FROM auth WHERE guid = ?`
+const insertUserAuth = `INSERT INTO auth (guid, email, password) VALUES (?, ?, ?)`
+
+// PostgreSQL queries
+const getUserDataByGuid = `SELECT * FROM data WHERE guid = $1`
+const insertUserData = `INSERT INTO data (guid, firstname, lastname, username, mobile) VALUES ($1, $2, $3, $4, $5)`
 
 // Setup express app
 const app = express()
@@ -56,18 +60,38 @@ app.get('/', (request, response) => response.render('index'))
 app.get('/login', (request, response) => response.render('login'))
 app.get('/register', (request, response) => response.render('register'))
 
-async function queryUser(email) {
-  const user = (dbType == 'pgsql') ? await client.query (getUserQuery, [email]) : await client.promise().execute(getUserQuery, [email])
-  return user.rows ? user.rows[0] : user[0][0]
+async function userCheck(email) {
+  // MySQL: users.auth
+  const user = await myClient.promise().execute(getUserAuthByEmail, [email])
+  return user[0][0]
 }
 
-async function insertUser(params) {
+async function userDetails(guid) {
+  // MySQL: users.auth
+  const auth = await myClient.promise().execute(getUserAuthByGuid, [guid])
+  // PostgreSQL: users.data
+  const data = await pgClient.query(getUserDataByGuid, [guid])
+  return {
+    guid: guid,
+    firstname: data.rows[0].firstname,
+    lastname: data.rows[0].lastname,
+    username: data.rows[0].username,
+    email: auth[0][0].email,
+    mobile: data.rows[0].mobile
+  };
+}
+
+async function userReg(params) {
   const hashedPassword = await bcrypt.hash(params.password, 12)
-  await (dbType == 'pgsql') ? client.query(insertUserQuery, [params.firstName, params.lastName, params.username, params.email, params.mobile, hashedPassword]) : client.promise().execute(insertUserQuery, [params.firstName, params.lastName, params.username, params.email, params.mobile, hashedPassword])
+  const guid = randomUUID();
+  // MySQL: users.auth
+  await myClient.promise().execute(insertUserAuth, [guid, params.email, hashedPassword])
+  // PostgreSQL: users.data
+  await pgClient.query(insertUserData, [guid, params.firstName, params.lastName, params.username, params.mobile])
 }
 
-function generateToken(email) {
-  return jwt.sign({ email }, privateKey, {
+function generateToken(guid) {
+  return jwt.sign({ guid }, privateKey, {
     algorithm: 'ES384',
     expiresIn: '8m'
   })
@@ -86,13 +110,13 @@ app.post('/auth/login', async (request, response) => {
   const { email, password } = request.body
 
   try {
-    const user = await queryUser(email)
-    if (!user) return response.status(404).render('message', { subject: 'Authentication failed', message: 'User not found' })
+    const auth = await userCheck(email)
+    if (!auth) return response.status(404).render('message', { subject: 'Authentication failed', message: 'User not found' })
 
-    const match = await bcrypt.compare(password, user.password)
+    const match = await bcrypt.compare(password, auth.password)
     if (!match) return response.status(401).render('message', { subject: 'Authentication failed', message: 'Incorrect password' })
 
-    const token = generateToken(email)
+    const token = generateToken(auth.guid)
     response.cookie('jwt', token, {
       httpOnly: true,
       secure: false // Set to true in production (HTTPS)
@@ -111,10 +135,10 @@ app.post('/auth/register', async (request, response) => {
 
   try {
     // Check if email already exists
-    const existingUser = await queryUser(email)
+    const existingUser = await userCheck(email)
     if (existingUser) return response.status(400).render('message', { subject: 'Registration failed', message: 'Email address is already registered' })
 
-    await insertUser({ firstName, lastName, username, email, mobile, password })
+    await userReg({ firstName, lastName, username, email, mobile, password })
     response.render('message', { subject: 'Registration completed', message: `User ${username} successfully registered` })
   } catch (error) {
     console.error('Error inserting user:', error)
@@ -129,14 +153,14 @@ app.get('/home', async (request, response) => {
 
   try {
     const decoded = verifyToken(token)
-    const user = await queryUser(decoded.email)
+    const user = await userDetails(decoded.guid)
 
     if (!user) return response.status(404).render('message', { subject: 'Unauthorized', message: 'User not found' })
 
     response.render('home', {
-      id: user.id,
-      firstName: user.firstname || user.firstName,
-      lastName: user.lastname || user.lastName,
+      guid: user.guid,
+      firstName: user.firstname,
+      lastName: user.lastname,
       username: user.username,
       email: user.email,
       mobile: user.mobile
@@ -152,13 +176,14 @@ app.post('/api/login', async (request, response) => {
   const { email, password } = request.body
 
   try {
-    const user = await queryUser(email, password)
-    if (!user) return response.status(404).json({ error: 'User not found' })
+    const auth = await userCheck(email)
+    if (!auth) return response.status(404).json({ error: 'User not found' })
 
-    const match = await bcrypt.compare(password, user.password)
+    const match = await bcrypt.compare(password, auth.password)
     if (!match) return response.status(401).json({ error: 'Incorrect password' })
 
-    const token = generateToken(email)
+    const token = generateToken(auth.guid)
+    const user = await userDetails(auth.guid)
     response.json({
       authentication: 'Successful',
       authorization: `${token}`,
@@ -177,14 +202,14 @@ app.get('/api/userinfo', async (request, response) => {
 
   try {
     const decoded = verifyToken(token)
-    const user = await queryUser(decoded.email)
+    const user = await userDetails(decoded.guid)
 
     if (!user) return response.status(404).json({ error: 'User not found' })
 
     response.json({
-      id: user.id,
-      firstName: user.firstname || user.firstName,
-      lastName: user.lastname || user.lastName,
+      guid: user.guid,
+      firstName: user.firstname,
+      lastName: user.lastname ,
       username: user.username,
       email: user.email,
       mobile: user.mobile
