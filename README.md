@@ -24,35 +24,25 @@ The environment variables are sourced from `.env` file or container `env` for Po
 
 ### 1.3. Database Connection
 
-The app is coded to work with both MySQL and PostgreSQL databases.
+The [users](users.md) data is split into `auth` and `data` tables.
 
-The [MySQL](users-my.sql) and [PostgreSQL](users-pg.sql) database files in this repository provide fictitious generated data as initial user pool to test the application.
+The [MySQL](users.auth.my.sql) and [PostgreSQL](users.data.pg.sql) database files in this repository provide fictitious generated data as initial user pool to test the application.
 
-Database type is selected by the `DB_TYPE` environment variable: `mysql` or `pgsql`.
-
-> [!Note]
+> [!Tip]
 >
-> There is extensive use of ternary operators in the code to select between MySQL and PostgreSQL functions and queries based on the `DB_TYPE` parameter.
+> Columns are case sensitive in MySQL, while PostgreSQL automatically lower-case the parameters unless it's enclosed with double quotes `""`
 >
-> For reference, ternary operator syntax is: `condition ? exprIfTrue : exprIfFalse`.
+> This is why `firstname` and `lastname` in the `insertUserData` PostgreSQL query are in lower case when the column names are `firstName` and `lastName`
 >
-> Examples:
+> If similar case columns exist in MySQL, the query must follow the cases of the columns
 >
-> ```js
-> const getUserQuery = (dbType == 'pgsql') ? `SELECT * FROM users WHERE email = $1` : `SELECT * FROM users WHERE email = ?`
+> Ternary operators (`condition ? exprIfTrue : exprIfFalse`) can be helpful to select the appropriate names
+>
+> For example, if column `thisColumn` exist in both MySQL and PostgreSQL tables and variable `dbType` specifies the database:
+>
 > ```
->
-> ```js
-> await (dbType == 'pgsql') ? client.query(insertUserQuery, <parameters>) : client.promise().execute(insertUserQuery, <parameters>)
+> const columnName = (dbType == 'pgsql') ? `thiscolumn` : `thisColumn`
 > ```
-
-> [!Note]
->
-> MySQL and PostgreSQL handles case sensitivity differently on the queries.
->
-> Columns `firstName` and `lastName` are case sensitive in MySQL, while PostgreSQL automatically lower-case the parameters unless it's enclosed with double quotes `""`.
->
-> This is the reason for the `firstName: user.firstname || user.firstName` and `lastName: user.lastname || user.lastName` lines in `/home` and `/userinfo` routes.
 
 ### 1.4. User Session and Security
 
@@ -107,7 +97,7 @@ The express server listens on port `3000` with the configurations below:
 
 Renders the index/intro page
 
-![image](https://github.com/user-attachments/assets/5523123a-b22b-4ace-b879-73d5067f5aec)
+![](https://github.com/user-attachments/assets/09e0672d-0f8a-4a36-85d9-35042fb09532)
 
 ##### 1.7.1.2. `GET` `/login`
 
@@ -115,7 +105,7 @@ Renders the login page
 - The `Login` button is disabled until both email address and password are filled in
 - The `Email address` field checks for proper email format input
 
-![image](https://github.com/user-attachments/assets/ad037a75-f82c-426c-af24-713a14770a8b)
+![](https://github.com/user-attachments/assets/d4c4c09c-78c5-4085-8335-8ac17d71a855)
 
 ##### 1.7.1.3. `GET` `/register`
 
@@ -125,7 +115,7 @@ Renders the registration page.
   - Input to the `Password` and `Confirm Password` fields are identical
 - The `Confirm Password` field warns when it is different from the `Password` field
 
-![image](https://github.com/user-attachments/assets/71e00f14-b3f2-4585-bd4a-1465582d2d2a)
+![](https://github.com/user-attachments/assets/008b8b3c-8a0c-4c39-b248-d6123bd7d190)
 
 ##### 1.7.1.4. `POST` `/auth/login`
 
@@ -135,11 +125,11 @@ Renders the registration page.
 
 Error for empty or non-existent email address:
 
-![image](https://github.com/user-attachments/assets/08436833-9c59-4a23-8b2f-f68d2bc925de)
+![](https://github.com/user-attachments/assets/7e152e00-0993-4237-8a2d-1b87754acb0f)
 
 Error for incorrect password entered:
 
-![image](https://github.com/user-attachments/assets/be5202ab-7b8d-48c3-b772-2d90bff4a22f)
+![](https://github.com/user-attachments/assets/9a534576-c8f5-4fdb-9a84-2d38945d5586)
 
 > [!Note]
 >
@@ -155,11 +145,11 @@ Error for incorrect password entered:
 
 Successful registration:
 
-![image](https://github.com/user-attachments/assets/c2e328e7-cd59-494a-b164-5a107a7ec771)
+![](https://github.com/user-attachments/assets/d694b43d-168d-4acc-9606-d18a39f23c7e)
 
 Error if email address already exists:
 
-![image](https://github.com/user-attachments/assets/5c90bd3e-e1bc-4549-af3e-c078f7d13510)
+![](https://github.com/user-attachments/assets/48a13db9-b804-4762-9040-e17a337cc726)
 
 ##### 1.7.1.6. `GET` `/home`
 
@@ -169,11 +159,11 @@ Error if email address already exists:
 
 Error message when loading `/home` without authentication (non-existent, expired or invalid JWT in cookies):
 
-![image](https://github.com/user-attachments/assets/2f9e7682-8fa2-49ed-8e78-d29fb2463ac2)
+![](https://github.com/user-attachments/assets/bfa2acdc-421d-4f25-b4be-54e5899ded04)
 
 Loading `/home` with valid JWT:
 
-![image](https://github.com/user-attachments/assets/3e9fec27-e510-4555-87a2-8875793480da)
+![](https://github.com/user-attachments/assets/896daeef-c31a-41d0-8e0a-8c0a95c92dc3)
 
 #### 1.7.2. API Access
 
