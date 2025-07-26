@@ -160,19 +160,25 @@ spec:
         imagePullPolicy: IfNotPresent
         command: ["/bin/bash", "-c"]
         args:
-        - npm install express express-session mysql2 pg path dotenv bcrypt hbs jsonwebtoken crypto cookie-parser &&
+        - npm install express express-session mysql2 pg path dotenv bcrypt hbs jsonwebtoken cookie-parser &&
           node app.js
         workingDir: /etc/usersapp
         env:
-        - name: DB_TYPE
-          value: mysql
-        - name: DB_HOST
+        - name: MY_HOST
           value: mysql.usersapp.svc.cluster.local
-        - name: DB_NAME
+        - name: MY_DB
           value: users
-        - name: DB_USER
+        - name: MY_USER
           value: node
-        - name: DB_PASSWORD
+        - name: MY_PASSWORD
+          value: password
+        - name: PG_HOST
+          value: pgsql.usersapp.svc.cluster.local
+        - name: PG_DB
+          value: users
+        - name: PG_USER
+          value: node
+        - name: PG_PASSWORD
           value: password
         - name: JWT_PRIVATE_KEY
           value: /etc/usersapp/pki/jwt.key
