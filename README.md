@@ -30,15 +30,15 @@ The [MySQL](users.auth.my.sql) and [PostgreSQL](users.data.pg.sql) database file
 
 > [!Tip]
 >
-> Columns are case sensitive in MySQL, while PostgreSQL automatically lower-case the parameters unless it's enclosed with double quotes `""`
+> Columns are case sensitive in MySQL, while PostgreSQL automatically lower-case them unless they're enclosed with double quotes `""`
 >
-> This is why `firstname` and `lastname` in the `insertUserData` PostgreSQL query are in lower case when the column names are `firstName` and `lastName`
+> Hence, `firstname` and `lastname` in `insertUserData` query can be lower case when column names are `firstName` and `lastName`
 >
 > If similar case columns exist in MySQL, the query must follow the cases of the columns
 >
 > Ternary operators (`condition ? exprIfTrue : exprIfFalse`) can be helpful to select the appropriate names
 >
-> For example, if column `thisColumn` exist in both MySQL and PostgreSQL tables and variable `dbType` specifies the database:
+> For example, if column `thisColumn` exists in both MySQL and PostgreSQL tables and variable `dbType` specifies the database:
 >
 > ```
 > const columnName = (dbType == 'pgsql') ? `thiscolumn` : `thisColumn`
