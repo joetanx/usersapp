@@ -24,9 +24,9 @@ The environment variables are sourced from `.env` file or container `env` for Po
 
 ### 1.3. Database Connection
 
-The [users](users.md) data is split into `auth` and `data` tables.
+The [users](users.md) data is split into `auth` and `data` tables, with `guid` as the key to join user data across the tables
 
-The [MySQL](users.auth.my.sql) and [PostgreSQL](users.data.pg.sql) database files in this repository provide fictitious generated data as initial user pool to test the application.
+The [MySQL](users.auth.my.sql) and [PostgreSQL](users.data.pg.sql) database files in this repository provide fictitious generated data as initial user pool to test the application
 
 > [!Tip]
 >
@@ -69,25 +69,34 @@ The express server listens on port `3000` with the configurations below:
 
 ### 1.6. Functions
 
-**`queryUser(email)`**
-- **Purpose**: Retrieves user information based on email.
-- **Parameters**: `email` - Email of the user to retrieve.
-- **Returns**: User data object fetched from the database.
+#### `userCheck(email)`
+- **Purpose**: Runs `getUserAuthByEmail` query to lookup for user in `auth` email
+- **Parameters**: `email` - email of the user to retrieve
+- **Returns**: User auth row (`guid`, `email` and `password`) retrieved from the table
 
-**`insertUser(params)`**
-- **Purpose**: Inserts a new user into the database.
-- **Parameters**: `params` - Object containing user details (`firstName`, `lastName`, `username`, `email`, `mobile`, `password`).
+#### `userDetails(guid)`
+- **Purpose**: Runs `getUserAuthByGuid` and `getUserDataByGuid` queries to lookup for user in `auth` and `data` by guid
+- **Parameters**: `guid` - guid of the user to retrieve
+- **Returns**: User data object (`guid`, `firstName`, `lastName`, `username`, `email` and `mobile`) synthesized from data retrieved from the tables
+
+#### `userReg(params)`
+- **Purpose**: Generates hashed password and guid, then runs  `insertUserAuth` and `insertUserData` to insert a new user into `auth` and `data`
+- **Parameters**: `params` - Object containing user details (`firstName`, `lastName`, `username`, `email`, `mobile`, `password`)
 - **Returns**: None.
 
-**`generateToken(email)`**
-- **Purpose**: Generates a JWT token for the given email.
-- **Parameters**: `email` - Email of the user.
-- **Returns**: JWT token string.
+> [!Important]
+>
+> Atomicity is not implemented, meaning if a row is inserted into `auth`, but fails for `data`, there will be a "dirty" row in `auth` that does not correspond to a row in `data`
 
-**`verifyToken(token)`**
-- **Purpose**: Verifies the authenticity of a JWT token.
-- **Parameters**: `token` - JWT token to verify.
-- **Returns**: Decoded payload if the token is valid; otherwise, throws an error.
+#### `generateToken(guid)`
+- **Purpose**: Generates a JWT token for the user's guid
+- **Parameters**: `guid` - Email of the user
+- **Returns**: JWT token string
+
+#### `verifyToken(token)`
+- **Purpose**: Verifies the authenticity of a JWT token
+- **Parameters**: `token` - JWT token to verify
+- **Returns**: Decoded payload if the token is valid; otherwise, throws an error
 
 ### 1.7. Routes
 
