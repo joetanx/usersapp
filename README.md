@@ -363,8 +363,8 @@ EOF
 Create ConfigMap for mysql and pgsql:
 
 ```sh
-kubectl -n usersapp create configmap db-mysql --from-file=users-my.sql
-kubectl -n usersapp create configmap db-pgsql --from-file=users-pg.sql
+kubectl -n usersapp create configmap db-mysql --from-file=users.auth.my.sql
+kubectl -n usersapp create configmap db-pgsql --from-file=users.data.pg.sql
 ```
 
 Download keys, application code and view templates:
