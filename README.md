@@ -326,7 +326,7 @@ The [`usersapp.yaml`](/usersapp.yaml) in this repository defines services, deplo
 
 - Runs Node.js application (`docker.io/library/node:latest`)
 - Installs required npm packages and starts the application (`npm install ... && node app.js`)
-- Configured with environment variables for database connection (`DB_TYPE`, `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`), JWT keys (`JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`)
+- Configured with environment variables for database connection (`MY_HOST`, `MY_DB`, `MY_USER`, `MY_PASSWORD`, `PG_HOST`, `PG_DB`, `PG_USER`, `PG_PASSWORD`), JWT keys (`JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`)
 - Mounts ConfigMaps for application code (`node-app`), SSL certificates (`node-pki`), and view templates (`node-views`)
 
 #### 2.1.3. Ingress
@@ -347,17 +347,16 @@ kubectl create namespace usersapp
 Download database scripts:
 
 ```sh
-curl -sLO https://github.com/joetanx/usersapp/raw/main/users-my.sql
-curl -sLO https://github.com/joetanx/usersapp/raw/main/users-pg.sql
+curl -sLO https://github.com/joetanx/usersapp/raw/main/users.auth.my.sql
+curl -sLO https://github.com/joetanx/usersapp/raw/main/users.data.pg.sql
 ```
 
-Add Postgres user creation to `users-pg.sql`:
+Add Postgres user creation to `users.data.pg.sql`:
 
 ```sh
-cat << EOF >> users-pg.sql
+cat << EOF >> users.data.pg.sql
 CREATE ROLE node WITH LOGIN PASSWORD 'password';
-GRANT ALL ON users TO node;
-GRANT USAGE ON SEQUENCE users_id_seq TO node;
+GRANT ALL ON data TO node;
 EOF
 ```
 
@@ -418,11 +417,11 @@ Download database scripts:
 
 ```sh
 mkdir /etc/usersapp
-curl -sLo /etc/usersapp/users-my.sql https://github.com/joetanx/usersapp/raw/main/users-my.sql
-curl -sLo /etc/usersapp/users-pg.sql https://github.com/joetanx/usersapp/raw/main/users-pg.sql
+curl -sLo /etc/usersapp/users.auth.my.sql https://github.com/joetanx/usersapp/raw/main/users.auth.my.sql
+curl -sLo /etc/usersapp/users.data.pg.sql https://github.com/joetanx/usersapp/raw/main/users.data.pg.sql
 ```
 
-Add Postgres user creation to `users-pg.sql`:
+Add Postgres user creation to `users.data.pg.sql`:
 
 > [!Note]
 >
@@ -431,10 +430,9 @@ Add Postgres user creation to `users-pg.sql`:
 > User creation lines are added to the database initialization script create the `node` database user
 
 ```sh
-cat << EOF >> /etc/usersapp/users-pg.sql
+cat << EOF >> /etc/usersapp/users.data.pg.sql
 CREATE ROLE node WITH LOGIN PASSWORD 'password';
-GRANT ALL ON users TO node;
-GRANT USAGE ON SEQUENCE users_id_seq TO node;
+GRANT ALL ON data TO node;
 EOF
 ```
 
@@ -443,7 +441,7 @@ Deploy MySQL and PostgreSQL containers with initial setup scripts:
 ```sh
 # MySQL deployment
 podman run -d -p 3306:3306 \
--v /etc/usersapp/users-my.sql:/docker-entrypoint-initdb.d/users-my.sql \
+-v /etc/usersapp/users.auth.my.sql:/docker-entrypoint-initdb.d/users.auth.my.sql \
 -e MYSQL_DATABASE=users \
 -e MYSQL_USER=node \
 -e MYSQL_PASSWORD=password \
@@ -452,7 +450,7 @@ podman run -d -p 3306:3306 \
 
 # PostgreSQL deployment
 podman run -d -p 5432:5432 \
--v /etc/usersapp/users-pg.sql:/docker-entrypoint-initdb.d/users-pg.sql \
+-v /etc/usersapp/users.data.pg.sql:/docker-entrypoint-initdb.d/users.data.pg.sql \
 -e POSTGRES_PASSWORD=postgrespassword \
 --name postgres docker.io/library/postgres:latest
 ```
@@ -478,11 +476,14 @@ Deploy the Node.js application container:
 ```sh
 podman run -d -p 3000:3000 \
 -v /etc/usersapp:/etc/usersapp:Z \
--e DB_TYPE='mysql' \
--e DB_HOST=$(hostname) \
--e DB_NAME='users' \
--e DB_USER='node' \
--e DB_PASSWORD='password' \
+-e MY_HOST=$(hostname) \
+-e MY_DB='users' \
+-e MY_USER='node' \
+-e MY_PASSWORD='password' \
+-e PG_HOST=$(hostname) \
+-e PG_DB='users' \
+-e PG_USER='node' \
+-e PG_PASSWORD='password' \
 -e JWT_PRIVATE_KEY='/etc/usersapp/pki/jwt.key' \
 -e JWT_PUBLIC_KEY='/etc/usersapp/pki/jwt.pem' \
 -w /etc/usersapp \
@@ -541,8 +542,8 @@ Enable and populate database:
 
 ```sh
 systemctl enable --now mysqld
-curl -sLo /tmp/users-my.sql https://github.com/joetanx/usersapp/raw/main/users-my.sql
-mysql -u root < /tmp/users-my.sql
+curl -sLo /tmp/users.auth.my.sql https://github.com/joetanx/usersapp/raw/main/users.auth.my.sql
+mysql -u root < /tmp/users.auth.my.sql
 ```
 
 Create `node` database user:
@@ -557,13 +558,13 @@ mysql -u root -e "GRANT ALL PRIVILEGES ON users.* TO 'node'@'%';"
 Retrieve a random row:
 
 ```sh
-mysql -u root -e "SELECT id,firstName,lastName,username,email,mobile,password FROM users.users ORDER BY RAND() LIMIT 0,1;"
+mysql -u root -e "SELECT guid,email,password FROM users.auth ORDER BY RAND() LIMIT 0,1;"
 ```
 
 Search for a user:
 
 ```sh
-mysql -u root -e "SELECT id,firstName,lastName,username,email,mobile,password FROM users.users WHERE firstName LIKE '%jack%';"
+mysql -u root -e "SELECT guid,email,password FROM users.auth WHERE email LIKE '%jack%';"
 ```
 
 </details>
@@ -575,8 +576,8 @@ Initialize, enable and populate database:
 ```sh
 postgresql-setup --initdb
 systemctl enable --now postgresql
-curl -sLo /tmp/users-pg.sql https://github.com/joetanx/usersapp/raw/main/users-pg.sql
-sudo -u postgres psql -d postgres -f /tmp/users-pg.sql
+curl -sLo /tmp/users.data.pg.sql https://github.com/joetanx/usersapp/raw/main/users.data.pg.sql
+sudo -u postgres psql -d postgres -f /tmp/users.data.pg.sql
 ```
 
 Configure `/var/lib/pgsql/data/pg_hba.conf` to use password authentication over `scram-sha-256` hashing
@@ -630,8 +631,7 @@ Create `node` database user:
 
 ```
 sudo -u postgres psql -c "CREATE ROLE node WITH LOGIN PASSWORD 'password';"
-sudo -u postgres psql -d users -c "GRANT ALL ON users TO node;"
-sudo -u postgres psql -d users -c "GRANT USAGE ON SEQUENCE users_id_seq TO node;"
+sudo -u postgres psql -d users -c "GRANT ALL ON data TO node;"
 ```
 
 Reset user password (if needed):
@@ -645,13 +645,13 @@ sudo -u postgres psql -c "ALTER USER node WITH PASSWORD 'password';"
 Retrieve a random row:
 
 ```sh
-sudo -u postgres psql -d users -c "SELECT id,firstName,lastName,username,email,mobile,password FROM users ORDER BY RANDOM() LIMIT 1 OFFSET 0;"
+sudo -u postgres psql -d users -c "SELECT guid,firstName,lastName,username,mobile FROM data ORDER BY RANDOM() LIMIT 1 OFFSET 0;"
 ```
 
 Search for a user:
 
 ```sh
-sudo -u postgres psql -d users -c "SELECT id,firstName,lastName,username,email,mobile,password FROM users WHERE LOWER(firstName) LIKE '%jack%';"
+sudo -u postgres psql -d users -c "SELECT guid,firstName,lastName,username,mobile FROM data WHERE LOWER(firstName) LIKE '%jack%';"
 ```
 
 </details>
@@ -671,11 +671,14 @@ mkdir -p /etc/usersapp/views /etc/usersapp/pki
 cd /etc/usersapp
 npm install express express-session mysql2 pg path dotenv bcrypt hbs jsonwebtoken cookie-parser
 cat << EOF > /etc/usersapp/.env
-DB_TYPE = mysql
-DB_HOST = $(hostname)
-DB_NAME = users
-DB_USER = node
-DB_PASSWORD = password
+MY_HOST = $(hostname)
+MY_DB = users
+MY_USER = node
+MY_PASSWORD = password
+PG_HOST = $(hostname)
+PG_DB = users
+PG_USER = node
+PG_PASSWORD = password
 JWT_PRIVATE_KEY = /etc/usersapp/pki/jwt.key
 JWT_PUBLIC_KEY = /etc/usersapp/pki/jwt.pem
 EOF
