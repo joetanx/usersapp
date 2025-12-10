@@ -64,7 +64,7 @@ spec:
   - websecure
   routes:
   - kind: Rule
-    match: Host(\`usersapp.vx\`)
+    match: Host(`usersapp.vx`)
     services:
     - name: usersapp
       port: 3000
