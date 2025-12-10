@@ -329,12 +329,10 @@ The [`usersapp.yaml`](/usersapp.yaml) in this repository defines services, deplo
 - Configured with environment variables for database connection (`MY_HOST`, `MY_DB`, `MY_USER`, `MY_PASSWORD`, `PG_HOST`, `PG_DB`, `PG_USER`, `PG_PASSWORD`), JWT keys (`JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`)
 - Mounts ConfigMaps for application code (`node-app`), SSL certificates (`node-pki`), and view templates (`node-views`)
 
-#### 2.1.3. Ingress
+#### 2.1.3. IngressRoute and certificate
 
-- **Name**: usersapp
-- **Annotations**: Uses `cert-manager.io/cluster-issuer: ca-issuer` for SSL certificates
-- **TLS**: Enables HTTPS with a TLS secret (`usersapp-tls`)
-- **Routing**: Directs traffic from `usersapp.vx` to the Node.js service (`node`) on path `/`
+- Routing: Traefik IngressRoute directs traffic from `usersapp.vx` to the Node.js service (`node`) on path `/`
+- TLS: `Certificate` resource named `usersapp` managed by `cert-manager`, private key in secret `usersapp` linked to IngressRoute
 
 ### 2.2. Deployment
 
