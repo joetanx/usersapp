@@ -40,30 +40,6 @@ spec:
     port: 3000
     targetPort: 3000
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: usersapp
-  namespace: usersapp
-  annotations:
-    cert-manager.io/cluster-issuer: ca-issuer
-spec:
-  ingressClassName: nginx
-  rules:
-  - host: usersapp.vx
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: node
-            port:
-              number: 3000
-  tls:
-  - hosts:
-    - usersapp.vx
-    secretName: usersapp-tls
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
@@ -77,7 +53,6 @@ spec:
     name: ca-issuer
     kind: ClusterIssuer
     group: cert-manager.io
----
 ---
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
@@ -94,7 +69,7 @@ spec:
     - name: usersapp
       port: 3000
   tls:
-    secretName: kubernetes-dashboard-tls
+    secretName: usersapp
 ---
 apiVersion: apps/v1
 kind: Deployment
