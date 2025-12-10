@@ -64,6 +64,37 @@ spec:
   - hosts:
     - usersapp.vx
     secretName: usersapp-tls
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: usersapp
+  namespace: usersapp
+spec:
+  secretName: usersapp
+  dnsNames:
+  - usersapp.vx
+  issuerRef:
+    name: ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: usersapp
+  namespace: usersapp
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(\`usersapp.vx\`)
+    services:
+    - name: usersapp
+      port: 3000
+  tls:
+    secretName: kubernetes-dashboard-tls
 ---
 apiVersion: apps/v1
 kind: Deployment
