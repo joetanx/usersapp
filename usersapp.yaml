@@ -6,11 +6,12 @@ metadata:
 spec:
   clusterIP: None
   selector:
-    app: mysql
+    app.kubernetes.io/component: mysql
   ports:
-  - protocol: TCP
+  - name: mysql
     port: 3306
     targetPort: 3306
+    protocol: TCP
 ---
 apiVersion: v1
 kind: Service
@@ -20,11 +21,12 @@ metadata:
 spec:
   clusterIP: None
   selector:
-    app: pgsql
+    app.kubernetes.io/component: pgsql
   ports:
-  - protocol: TCP
+  - name: pgsql
     port: 5432
     targetPort: 5432
+    protocol: TCP
 ---
 apiVersion: v1
 kind: Service
@@ -34,11 +36,12 @@ metadata:
 spec:
   clusterIP: None
   selector:
-    app: node
+    app.kubernetes.io/component: node
   ports:
-  - protocol: TCP
+  - name: node
     port: 3000
     targetPort: 3000
+    protocol: TCP
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -60,7 +63,7 @@ spec:
           service:
             name: node
             port:
-              number: 3000
+              name: node
   tls:
   - hosts:
     - usersapp.vx
@@ -71,17 +74,19 @@ kind: Deployment
 metadata:
   name: mysql
   labels:
-    app: mysql
+    app.kubernetes.io/name: usersapp
+    app.kubernetes.io/component: mysql
   namespace: usersapp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mysql
+      app.kubernetes.io/component: mysql
   template:
     metadata:
       labels:
-        app: mysql
+        app.kubernetes.io/name: usersapp
+        app.kubernetes.io/component: mysql
     spec:
       containers:
       - name: mysql
@@ -109,18 +114,20 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: pgsql
-  labels:
-    app: pgsql
   namespace: usersapp
+  labels:
+    app.kubernetes.io/name: usersapp
+    app.kubernetes.io/component: pgsql
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: pgsql
+      app.kubernetes.io/component: pgsql
   template:
     metadata:
       labels:
-        app: pgsql
+        app.kubernetes.io/name: usersapp
+        app.kubernetes.io/component: pgsql
     spec:
       containers:
       - name: pgsql
@@ -142,18 +149,21 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: node
-  labels:
-    app: node
   namespace: usersapp
+  labels:
+    app.kubernetes.io/name: usersapp
+    app.kubernetes.io/component: node
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: node
+      app.kubernetes.io/name: usersapp
+      app.kubernetes.io/component: node
   template:
     metadata:
       labels:
-        app: node
+        app.kubernetes.io/name: usersapp
+        app.kubernetes.io/component: node
     spec:
       containers:
       - name: node
