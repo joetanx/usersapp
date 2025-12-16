@@ -290,9 +290,9 @@ The [`usersapp.yaml`](/usersapp.yaml) in this repository defines services, deplo
 
 |Name|Type|Port|Selectors|
 |---|---|---|---|
-|mysql|ClusterIP|3306|`app: mysql`|
-|pgsql|ClusterIP|5432|`app: pgsql`|
-|node|ClusterIP|3000|`app: node`|
+|mysql|ClusterIP|3306|`app.kubernetes.io/component: mysql`|
+|pgsql|ClusterIP|5432|`app.kubernetes.io/component: pgsql`|
+|node|ClusterIP|3000|`app.kubernetes.io/component: node`|
 
 > [!note]
 >
@@ -304,14 +304,14 @@ The [`usersapp.yaml`](/usersapp.yaml) in this repository defines services, deplo
 
 **mysql**
 
-- Pods label: `app: mysql`
+- Pods label: `app.kubernetes.io/component: mysql`
 - Runs MySQL database (`docker.io/library/mysql:latest`)
 - Configured with environment variables for database setup (`MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD`)
 - Mounts a ConfigMap (`db-mysql`) on `/docker-entrypoint-initdb.d` for database initialization script
 
 **pgsql**
 
-- Pods label: `app: pgsql`
+- Pods label: `app.kubernetes.io/component: pgsql`
 - Runs MySQL database (`docker.io/library/postgres:latest`)
 - Configured with environment variables for database setup (`POSTGRES_PASSWORD`)
 - Mounts a ConfigMap (`db-mysql`) on `/docker-entrypoint-initdb.d` for database initialization script
