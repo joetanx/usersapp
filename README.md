@@ -312,7 +312,7 @@ The [`usersapp.yaml`](/usersapp.yaml) in this repository defines services, deplo
 **pgsql**
 
 - Pods label: `app.kubernetes.io/component: pgsql`
-- Runs MySQL database (`docker.io/library/postgres:latest`)
+- Runs MySQL database (`docker.io/library/postgres:alpine`)
 - Configured with environment variables for database setup (`POSTGRES_PASSWORD`)
 - Mounts a ConfigMap (`db-mysql`) on `/docker-entrypoint-initdb.d` for database initialization script
 
@@ -324,7 +324,7 @@ The [`usersapp.yaml`](/usersapp.yaml) in this repository defines services, deplo
 
 **node**
 
-- Runs Node.js application (`docker.io/library/node:latest`)
+- Runs Node.js application (`docker.io/library/node:alpine`)
 - Installs required npm packages and starts the application (`npm install ... && node app.js`)
 - Configured with environment variables for database connection (`MY_HOST`, `MY_DB`, `MY_USER`, `MY_PASSWORD`, `PG_HOST`, `PG_DB`, `PG_USER`, `PG_PASSWORD`), JWT keys (`JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`)
 - Mounts ConfigMaps for application code (`node-app`), SSL certificates (`node-pki`), and view templates (`node-views`)
@@ -450,7 +450,7 @@ podman run -d -p 3306:3306 \
 podman run -d -p 5432:5432 \
 -v /etc/usersapp/users.data.pg.sql:/docker-entrypoint-initdb.d/users.data.pg.sql \
 -e POSTGRES_PASSWORD=postgrespassword \
---name postgres docker.io/library/postgres:latest
+--name postgres docker.io/library/postgres:alpine
 ```
 
 ### 3.3. Deploy Node.js Application
@@ -485,7 +485,7 @@ podman run -d -p 3000:3000 \
 -e JWT_PRIVATE_KEY='/etc/usersapp/pki/jwt.key' \
 -e JWT_PUBLIC_KEY='/etc/usersapp/pki/jwt.pem' \
 -w /etc/usersapp \
---name node node:latest /bin/bash -c "npm install express express-session mysql2 pg path dotenv bcrypt hbs jsonwebtoken cookie-parser && node app.js"
+--name node node:alpine /bin/sh -c "npm install express express-session mysql2 pg path dotenv bcrypt hbs jsonwebtoken cookie-parser && node app.js"
 ```
 
 ### 3.4. Deploy Nginx
@@ -514,7 +514,7 @@ Deploy the Nginx container:
 podman run -d -p 443:443 \
 -v /etc/nginx/tls:/etc/nginx/tls:ro \
 -v /etc/nginx/nginx.conf:/etc/nginx/nginx.conf:ro \
---name nginx docker.io/library/nginx:latest
+--name nginx docker.io/library/nginx:alpine
 ```
 
 ## 4. Deployment via manual install
