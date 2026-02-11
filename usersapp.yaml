@@ -131,7 +131,7 @@ spec:
     spec:
       containers:
       - name: pgsql
-        image: docker.io/library/postgres:latest
+        image: docker.io/library/postgres:alpine
         imagePullPolicy: IfNotPresent
         env:
         - name: POSTGRES_PASSWORD
@@ -167,9 +167,9 @@ spec:
     spec:
       containers:
       - name: node
-        image: docker.io/library/node:latest
+        image: docker.io/library/node:alpine
         imagePullPolicy: IfNotPresent
-        command: ["/bin/bash", "-c"]
+        command: ["/bin/sh", "-c"]
         args:
         - npm install express express-session mysql2 pg path dotenv bcrypt hbs jsonwebtoken cookie-parser &&
           node app.js
